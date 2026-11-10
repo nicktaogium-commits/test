@@ -78,7 +78,7 @@ public class InvoiceDialog extends JDialog {
                     .append("<tr style='background:#eee'><th align='left'>Món</th><th>SL</th>")
                     .append("<th align='right'>Đơn giá</th><th align='right'>Thành tiền</th></tr>");
                 try (PreparedStatement d = c.prepareStatement(
-                    "SELECT p.name,od.quantity,od.unit_price,od.line_total " +
+                    "SELECT p.name,od.quantity,od.unit_price,od.line_total,COALESCE(od.note,'') " +
                     "FROM order_details od JOIN products p ON p.id=od.product_id WHERE od.order_id=?")) {
                     d.setLong(1, orderId);
                     try (ResultSet x = d.executeQuery()) {
@@ -87,6 +87,9 @@ public class InvoiceDialog extends JDialog {
                                 .append("</td><td align='center'>").append(x.getInt(2))
                                 .append("</td><td align='right'>").append(money.format(x.getBigDecimal(3)))
                                 .append("</td><td align='right'>").append(money.format(x.getBigDecimal(4))).append("</td></tr>");
+                            if(x.getString(5)!=null&&!x.getString(5).isBlank())
+                                html.append("<tr><td colspan='4' style='color:#47718b;font-size:10px;padding:2px 7px'>Ghi chú: ")
+                                    .append(escape(x.getString(5))).append("</td></tr>");
                         }
                     }
                 }
