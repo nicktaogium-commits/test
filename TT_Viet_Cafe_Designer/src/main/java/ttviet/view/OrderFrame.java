@@ -2,7 +2,9 @@ package ttviet.view;
 import javax.swing.*;import javax.swing.table.DefaultTableModel;import java.awt.*;import java.sql.*;import ttviet.dao.DB;import ttviet.dao.OrderDAO;
 public class OrderFrame extends JFrame {
  //GEN-BEGIN:variables
- private JLabel lblTitle,lblTotal;private JComboBox<String> cboProduct;private JSpinner spQty;private JTable tblCart;private JScrollPane scroll;private JButton btnAdd,btnPay,btnClose;private DefaultTableModel model;
+ private JLabel lblTitle,lblTotal;private JComboBox<String> cboProduct;private JSpinner spQty;private JTable tblCart;private JScrollPane scroll;private JButton btnAdd,btnPay,btnClose;
+ // Biến dữ liệu giỏ hàng do lập trình viên quản lý
+ private DefaultTableModel model;
  //GEN-END:variables
  public OrderFrame(){initComponents();loadProducts();}
  //GEN-BEGIN:initComponents
