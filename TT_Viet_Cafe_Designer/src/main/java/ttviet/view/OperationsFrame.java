@@ -77,8 +77,8 @@ public class OperationsFrame extends JFrame {
     private void applyRolePermissions(){
         if(isManager())return;
         java.util.Set<String> allowed=new java.util.HashSet<>();
-        if(isCashier())java.util.Collections.addAll(allowed,"Tổng quan","Sơ đồ bàn","Hóa đơn","Báo cáo");
-        else if(isService())java.util.Collections.addAll(allowed,"Sơ đồ bàn","Thực đơn & giá");
+        if(isCashier())java.util.Collections.addAll(allowed,"Tổng quan","Phục vụ","Hóa đơn","Báo cáo");
+        else if(isService())java.util.Collections.addAll(allowed,"Phục vụ");
         else if(isKitchen())java.util.Collections.addAll(allowed,"Thực đơn & giá");
         else allowed.add("Tổng quan");
         for(int i=tabs.getTabCount()-1;i>=0;i--)
