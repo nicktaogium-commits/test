@@ -7,7 +7,15 @@ import java.sql.*;
 public final class PaymentDAO {
     private PaymentDAO() {}
 
+    private static void requireCashierOrManager() throws SQLException {
+        String role=Session.getRole()==null ? "" : Session.getRole().trim().toLowerCase(java.util.Locale.ROOT);
+        boolean allowed=role.equals("manager") || role.equals("admin") || role.equals("quản lý") ||
+            role.equals("quan ly") || role.equals("cashier") || role.equals("thu ngân") || role.equals("thu ngan");
+        if(!allowed)throw new SQLException("Chỉ thu ngân hoặc quản lý mới có quyền xác nhận thanh toán.");
+    }
+
     public static boolean payCash(long orderId, BigDecimal received) throws SQLException {
+        requireCashierOrManager();
         if (received == null || received.compareTo(BigDecimal.ZERO) <= 0)
             throw new SQLException("So tien khach dua khong hop le.");
         try (Connection c=DB.getConnection()) {
