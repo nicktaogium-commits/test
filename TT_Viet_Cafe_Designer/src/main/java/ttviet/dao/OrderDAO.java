@@ -132,8 +132,9 @@ public class OrderDAO {
                         }
                     }
                     try (PreparedStatement q = c.prepareStatement(
-                        "SELECT id,quantity FROM order_details WHERE order_id=? AND product_id=? LIMIT 1 FOR UPDATE")) {
+                        "SELECT id,quantity FROM order_details WHERE order_id=? AND product_id=? AND COALESCE(note,'')=? LIMIT 1 FOR UPDATE")) {
                         q.setLong(1,orderId); q.setInt(2,productId);
+                        q.setString(3, model.getColumnCount()>4 && model.getValueAt(i,4)!=null ? model.getValueAt(i,4).toString() : "");
                         try (ResultSet rs=q.executeQuery()) {
                             if (rs.next()) {
                                 int detailId=rs.getInt(1), newQty=rs.getInt(2)+qty;
