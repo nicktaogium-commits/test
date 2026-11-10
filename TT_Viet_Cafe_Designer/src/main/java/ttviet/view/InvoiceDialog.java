@@ -24,12 +24,19 @@ public class InvoiceDialog extends JDialog {
         preview.setBackground(Color.WHITE);
         add(new JScrollPane(preview), BorderLayout.CENTER);
 
+        JButton pay = new JButton("THANH TOÁN");
         JButton print = new JButton("IN HÓA ĐƠN");
         JButton close = new JButton("ĐÓNG");
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        actions.add(pay);
         actions.add(print);
         actions.add(close);
         add(actions, BorderLayout.SOUTH);
+        pay.addActionListener(e -> {
+            PaymentDialog dialog = new PaymentDialog(this, orderId);
+            dialog.setVisible(true);
+            loadInvoice(orderId);
+        });
         print.addActionListener(e -> printInvoice());
         close.addActionListener(e -> dispose());
         loadInvoice(orderId);
