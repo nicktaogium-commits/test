@@ -256,9 +256,18 @@ public class OperationsFrame extends JFrame {
     private void report(String a,String b,JTextArea out){
         try(Connection c=DB.getConnection()){
             StringBuilder x=new StringBuilder("BÁO CÁO TỪ "+a+" ĐẾN "+b+"\n"+"=".repeat(58)+"\n");
-            try(PreparedStatement q=c.prepareStatement("SELECT COUNT(*),COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(created_at) BETWEEN ? AND ?")){q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));try(ResultSet r=q.executeQuery()){r.next();x.append("Số hóa đơn: ").append(r.getInt(1)).append("\nDoanh thu: ").append(money.format(r.getBigDecimal(2))).append(" VNĐ\n");}}
+            try(PreparedStatement q=c.prepareStatement("SELECT COUNT(*),COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at) BETWEEN ? AND ?")){q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));try(ResultSet r=q.executeQuery()){r.next();x.append("Số hóa đơn: ").append(r.getInt(1)).append("\nDoanh thu: ").append(money.format(r.getBigDecimal(2))).append(" VNĐ\n");}}
+            try(PreparedStatement q=c.prepareStatement("SELECT payment_method,COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at) BETWEEN ? AND ? GROUP BY payment_method")){
+                q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));
+                try(ResultSet r=q.executeQuery()){
+                    x.append("DOANH THU THEO PHƯƠNG THỨC\n");
+                    while(r.next())x.append(r.getString(1)==null?"Khác":r.getString(1)).append(": ")
+                        .append(money.format(r.getBigDecimal(2))).append(" VNĐ\n");
+                    x.append("\n");
+                }
+            }
             try(PreparedStatement q=c.prepareStatement("SELECT COALESCE(SUM(amount),0) FROM asset_compensations WHERE DATE(created_at) BETWEEN ? AND ?")){q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));try(ResultSet r=q.executeQuery()){r.next();x.append("Bồi thường tài sản: ").append(money.format(r.getBigDecimal(1))).append(" VNĐ\n\nMÓN BÁN CHẠY\n");}}
-            try(PreparedStatement q=c.prepareStatement("SELECT p.name,SUM(d.quantity) sl FROM order_details d JOIN products p ON p.id=d.product_id JOIN orders o ON o.id=d.order_id WHERE o.payment_status='Đã thanh toán' AND DATE(o.created_at) BETWEEN ? AND ? GROUP BY p.id,p.name ORDER BY sl DESC LIMIT 10")){q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));try(ResultSet r=q.executeQuery()){while(r.next())x.append(String.format("%-38s %5d\n",r.getString(1),r.getInt(2)));}}
+            try(PreparedStatement q=c.prepareStatement("SELECT p.name,SUM(d.quantity) sl FROM order_details d JOIN products p ON p.id=d.product_id JOIN orders o ON o.id=d.order_id WHERE o.payment_status='Đã thanh toán' AND DATE(o.paid_at) BETWEEN ? AND ? GROUP BY p.id,p.name ORDER BY sl DESC LIMIT 10")){q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));try(ResultSet r=q.executeQuery()){while(r.next())x.append(String.format("%-38s %5d\n",r.getString(1),r.getInt(2)));}}
             out.setText(x.toString());
         }catch(Exception ex){error(ex);}
     }
@@ -297,6 +306,6 @@ public class OperationsFrame extends JFrame {
     }
     private void deleteSelected(JTable t,String table){int r=t.getSelectedRow();if(r<0)return;int id=((Number)t.getValueAt(r,0)).intValue();if(JOptionPane.showConfirmDialog(this,"Xóa bản ghi đã chọn?","Xác nhận",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;try(Connection c=DB.getConnection();PreparedStatement p=c.prepareStatement("DELETE FROM "+table+" WHERE id=?")){p.setInt(1,id);p.executeUpdate();refreshAll();}catch(Exception e){error(e);}}
     private void refreshAll(){loadProducts("");loadTables();loadStaff();loadShifts();loadDamages();loadHistory();loadPendingPayments();refreshStats();}
-    private void refreshStats(){try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT (SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(created_at)=CURDATE()),(SELECT COUNT(*) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(created_at)=CURDATE()),(SELECT COUNT(*) FROM cafe_tables WHERE status='Đang phục vụ')")){if(r.next()){if(revenueValue!=null)revenueValue.setText(money.format(r.getBigDecimal(1))+" đ");if(ordersValue!=null)ordersValue.setText(""+r.getInt(2));if(tablesValue!=null)tablesValue.setText(""+r.getInt(3));}}catch(Exception ignored){}}
+    private void refreshStats(){try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT (SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at)=CURDATE()),(SELECT COUNT(*) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at)=CURDATE()),(SELECT COUNT(*) FROM cafe_tables WHERE status='Đang phục vụ')")){if(r.next()){if(revenueValue!=null)revenueValue.setText(money.format(r.getBigDecimal(1))+" đ");if(ordersValue!=null)ordersValue.setText(""+r.getInt(2));if(tablesValue!=null)tablesValue.setText(""+r.getInt(3));}}catch(Exception ignored){}}
     private void error(Exception e){JOptionPane.showMessageDialog(this,e.getMessage(),"Lỗi dữ liệu",JOptionPane.ERROR_MESSAGE);}
 }
