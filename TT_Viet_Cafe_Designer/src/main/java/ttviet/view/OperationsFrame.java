@@ -36,7 +36,14 @@ public class OperationsFrame extends JFrame {
         JPanel p=new JPanel(new BorderLayout());p.setBackground(new Color(17,18,19));p.setBorder(new EmptyBorder(15,24,15,24));
         JLabel brand=new JLabel("<html><span style='color:#CDA05C;font-size:25pt;font-weight:bold'>T &amp; T VIET</span><br><span style='color:#D9C9A9'>CAFE • FAST FOOD &nbsp; | &nbsp; HỆ THỐNG QUẢN LÝ</span></html>");
         p.add(brand,BorderLayout.WEST);
-        JLabel user=new JLabel("QUẢN LÝ  •  CA LÀM VIỆC",SwingConstants.RIGHT);user.setForeground(GOLD);p.add(user,BorderLayout.EAST);
+        JPanel right=new JPanel(new FlowLayout(FlowLayout.RIGHT,12,5));right.setOpaque(false);
+        JLabel user=new JLabel("QUẢN LÝ  •  CA LÀM VIỆC",SwingConstants.RIGHT);user.setForeground(GOLD);
+        JButton logout=button("ĐĂNG XUẤT");
+        logout.addActionListener(e->{
+            int answer=JOptionPane.showConfirmDialog(this,"Bạn có chắc muốn đăng xuất?","Xác nhận đăng xuất",JOptionPane.YES_NO_OPTION);
+            if(answer==JOptionPane.YES_OPTION){dispose();new LoginFrame().setVisible(true);}
+        });
+        right.add(user);right.add(logout);p.add(right,BorderLayout.EAST);
         return p;
     }
     private void styleTabs(){tabs.setBackground(PANEL);tabs.setForeground(TEXT);tabs.setFont(new Font("SansSerif",Font.BOLD,13));}
@@ -151,7 +158,7 @@ public class OperationsFrame extends JFrame {
     private JPanel history(){
         JPanel p=page("HÓA ĐƠN / LỊCH SỬ","Tra cứu hóa đơn đã thanh toán theo thời gian và tổng tiền.");
         historyTable=table("Mã","Mã hóa đơn","Bàn","Thời gian","Tổng tiền","Trạng thái");
-        JButton reload=button("Làm mới"),detail=button("Xem chi tiết");
+        JButton reload=button("Làm mới"),detail=button("Xem / In hóa đơn");
         reload.addActionListener(e->loadHistory());detail.addActionListener(e->showOrderDetail());
         p.add(actions(reload,detail),BorderLayout.SOUTH);p.add(scroll(historyTable),BorderLayout.CENTER);return p;
     }
@@ -179,7 +186,12 @@ public class OperationsFrame extends JFrame {
     private void loadShifts(){if(shiftTable==null)return;DefaultTableModel m=(DefaultTableModel)shiftTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT w.id,e.full_name,w.shift_date,w.shift_name,w.start_time,w.end_time,w.note FROM work_shifts w JOIN employees e ON e.id=w.employee_id ORDER BY w.shift_date DESC")){while(r.next())m.addRow(new Object[]{r.getInt(1),r.getString(2),r.getDate(3),r.getString(4),r.getTime(5),r.getTime(6),r.getString(7)});}catch(Exception e){error(e);}}
     private void loadDamages(){if(damageTable==null)return;DefaultTableModel m=(DefaultTableModel)damageTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT id,description,quantity,unit_cost,amount,created_at,note FROM asset_compensations ORDER BY id DESC")){while(r.next())m.addRow(new Object[]{r.getInt(1),r.getString(2),r.getInt(3),r.getBigDecimal(4),r.getBigDecimal(5),r.getTimestamp(6),r.getString(7)});}catch(Exception e){error(e);}}
     private void loadHistory(){if(historyTable==null)return;DefaultTableModel m=(DefaultTableModel)historyTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT o.id,o.order_code,COALESCE(t.table_name,'Mang đi'),o.created_at,o.total,o.status FROM orders o LEFT JOIN cafe_tables t ON t.id=o.table_id ORDER BY o.id DESC")){while(r.next())m.addRow(new Object[]{r.getLong(1),r.getString(2),r.getString(3),r.getTimestamp(4),r.getBigDecimal(5),r.getString(6)});}catch(Exception e){error(e);}}
-    private void showOrderDetail(){int r=historyTable.getSelectedRow();if(r<0)return;long id=((Number)historyTable.getValueAt(r,0)).longValue();StringBuilder b=new StringBuilder();try(Connection c=DB.getConnection();PreparedStatement p=c.prepareStatement("SELECT p.name,d.quantity,d.unit_price,d.line_total FROM order_details d JOIN products p ON p.id=d.product_id WHERE d.order_id=?")){p.setLong(1,id);try(ResultSet x=p.executeQuery()){while(x.next())b.append(x.getString(1)).append(" x").append(x.getInt(2)).append(" — ").append(money.format(x.getBigDecimal(4))).append(" đ\n");}}catch(Exception e){error(e);}JOptionPane.showMessageDialog(this,b.length()==0?"Không có chi tiết":b.toString(),"Chi tiết hóa đơn",JOptionPane.INFORMATION_MESSAGE);}
+    private void showOrderDetail(){
+        int r=historyTable.getSelectedRow();
+        if(r<0){JOptionPane.showMessageDialog(this,"Chọn một hóa đơn trước.");return;}
+        long id=((Number)historyTable.getValueAt(r,0)).longValue();
+        new InvoiceDialog(this,id).setVisible(true);
+    }
     private void deleteSelected(JTable t,String table){int r=t.getSelectedRow();if(r<0)return;int id=((Number)t.getValueAt(r,0)).intValue();if(JOptionPane.showConfirmDialog(this,"Xóa bản ghi đã chọn?","Xác nhận",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;try(Connection c=DB.getConnection();PreparedStatement p=c.prepareStatement("DELETE FROM "+table+" WHERE id=?")){p.setInt(1,id);p.executeUpdate();refreshAll();}catch(Exception e){error(e);}}
     private void refreshAll(){loadProducts("");loadTables();loadStaff();loadShifts();loadDamages();loadHistory();refreshStats();}
     private void refreshStats(){try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT (SELECT COALESCE(SUM(total),0) FROM orders WHERE DATE(created_at)=CURDATE()),(SELECT COUNT(*) FROM orders WHERE DATE(created_at)=CURDATE()),(SELECT COUNT(*) FROM cafe_tables WHERE status='Đang phục vụ')")){if(r.next()){if(revenueValue!=null)revenueValue.setText(money.format(r.getBigDecimal(1))+" đ");if(ordersValue!=null)ordersValue.setText(""+r.getInt(2));if(tablesValue!=null)tablesValue.setText(""+r.getInt(3));}}catch(Exception ignored){}}
