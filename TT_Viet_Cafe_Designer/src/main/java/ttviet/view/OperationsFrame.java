@@ -182,7 +182,7 @@ public class OperationsFrame extends JFrame {
             "SELECT o.id,o.order_code,COALESCE(t.table_name,'Mang đi'),o.created_at,o.total,o.payment_status "+
             "FROM orders o LEFT JOIN cafe_tables t ON t.id=o.table_id "+
             "WHERE o.payment_status IS NULL OR o.payment_status<>'Đã thanh toán' ORDER BY o.created_at ASC")){
-            while(r.next())m.addRow(new Object[]{r.getLong(1),r.getString(2),r.getString(3),r.getTimestamp(4),r.getBigDecimal(5),r.getString(6)});
+            while(r.next())m.addRow(new Object[]{r.getLong(1),r.getString(2),r.getString(3),r.getTimestamp(4),r.getBigDecimal(5),r.getString(6),r.getString(7),r.getString(8),r.getTimestamp(9)});
         }catch(Exception e){error(e);}
     }
     private void openPendingPayment(){
@@ -241,7 +241,7 @@ public class OperationsFrame extends JFrame {
     }
     private JPanel history(){
         JPanel p=page("HÓA ĐƠN / LỊCH SỬ","Tra cứu hóa đơn đã thanh toán theo thời gian và tổng tiền.");
-        historyTable=table("Mã","Mã hóa đơn","Bàn","Thời gian","Tổng tiền","Trạng thái");
+        historyTable=table("ID","Mã hóa đơn","Bàn","Ngày tạo","Tổng tiền","Trạng thái đơn","Thanh toán","Phương thức","Đã trả lúc");
         JButton reload=button("Làm mới"),detail=button("Xem / In hóa đơn");
         reload.addActionListener(e->loadHistory());detail.addActionListener(e->showOrderDetail());
         p.add(actions(reload,detail),BorderLayout.SOUTH);p.add(scroll(historyTable),BorderLayout.CENTER);return p;
@@ -297,7 +297,7 @@ public class OperationsFrame extends JFrame {
     private void loadStaff(){if(staffTable==null)return;DefaultTableModel m=(DefaultTableModel)staffTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT id,full_name,phone,position_name,IF(active=1,'Có','Nghỉ') FROM employees ORDER BY id")){while(r.next())m.addRow(new Object[]{r.getInt(1),r.getString(2),r.getString(3),r.getString(4),r.getString(5)});}catch(Exception e){error(e);}}
     private void loadShifts(){if(shiftTable==null)return;DefaultTableModel m=(DefaultTableModel)shiftTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT w.id,e.full_name,w.shift_date,w.shift_name,w.start_time,w.end_time,w.note FROM work_shifts w JOIN employees e ON e.id=w.employee_id ORDER BY w.shift_date DESC")){while(r.next())m.addRow(new Object[]{r.getInt(1),r.getString(2),r.getDate(3),r.getString(4),r.getTime(5),r.getTime(6),r.getString(7)});}catch(Exception e){error(e);}}
     private void loadDamages(){if(damageTable==null)return;DefaultTableModel m=(DefaultTableModel)damageTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT id,description,quantity,unit_cost,amount,created_at,note FROM asset_compensations ORDER BY id DESC")){while(r.next())m.addRow(new Object[]{r.getInt(1),r.getString(2),r.getInt(3),r.getBigDecimal(4),r.getBigDecimal(5),r.getTimestamp(6),r.getString(7)});}catch(Exception e){error(e);}}
-    private void loadHistory(){if(historyTable==null)return;DefaultTableModel m=(DefaultTableModel)historyTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT o.id,o.order_code,COALESCE(t.table_name,'Mang đi'),o.created_at,o.total,o.status FROM orders o LEFT JOIN cafe_tables t ON t.id=o.table_id ORDER BY o.id DESC")){while(r.next())m.addRow(new Object[]{r.getLong(1),r.getString(2),r.getString(3),r.getTimestamp(4),r.getBigDecimal(5),r.getString(6)});}catch(Exception e){error(e);}}
+    private void loadHistory(){if(historyTable==null)return;DefaultTableModel m=(DefaultTableModel)historyTable.getModel();m.setRowCount(0);try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT o.id,o.order_code,COALESCE(t.table_name,'Mang đi'),o.created_at,o.total,o.status,o.payment_status,o.payment_method,o.paid_at FROM orders o LEFT JOIN cafe_tables t ON t.id=o.table_id ORDER BY o.id DESC")){while(r.next())m.addRow(new Object[]{r.getLong(1),r.getString(2),r.getString(3),r.getTimestamp(4),r.getBigDecimal(5),r.getString(6)});}catch(Exception e){error(e);}}
     private void showOrderDetail(){
         int r=historyTable.getSelectedRow();
         if(r<0){JOptionPane.showMessageDialog(this,"Chọn một hóa đơn trước.");return;}
