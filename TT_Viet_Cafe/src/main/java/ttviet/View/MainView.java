@@ -13,4 +13,5 @@ public class MainView extends JFrame {
  //GEN-BEGIN:variables
  private JLabel lblBrand,lblWelcome;private JTabbedPane tabs;private JButton btnLogout;
  //GEN-END:variables
+ public JButton getBtnLogout(){return btnLogout;}
 }
