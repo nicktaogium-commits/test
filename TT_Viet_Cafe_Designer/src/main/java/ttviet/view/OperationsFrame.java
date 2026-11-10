@@ -117,7 +117,6 @@ public class OperationsFrame extends JFrame {
             final int item=i;
             JButton b=button(names[i]);
             b.addActionListener(e->{
-                if(item==0){new OrderFrame().setVisible(true);return;}
                 for(int j=0;j<tabs.getTabCount();j++)
                     if(tabs.getTitleAt(j).equals(targetTitles[item])){tabs.setSelectedIndex(j);return;}
             });
