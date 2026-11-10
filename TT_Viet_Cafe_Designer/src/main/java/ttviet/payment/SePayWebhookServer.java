@@ -115,7 +115,8 @@ public final class SePayWebhookServer {
                 }
                 if (hasColumn(c, "cafe_tables", "status")) {
                     try (PreparedStatement p = c.prepareStatement(
-                        "UPDATE cafe_tables SET status='Trống' WHERE id=(SELECT table_id FROM orders WHERE id=?)")) {
+                        "UPDATE cafe_tables t SET status='Trống' WHERE t.id=(SELECT table_id FROM orders WHERE id=?) " +
+                    "AND NOT EXISTS(SELECT 1 FROM orders o WHERE o.table_id=t.id AND o.payment_status='Chờ thanh toán')")) {
                         p.setLong(1, orderId);
                         p.executeUpdate();
                     }
