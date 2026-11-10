@@ -1,6 +1,7 @@
 package ttviet.view;
 
 import ttviet.dao.DB;
+import ttviet.dao.Session;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
@@ -41,7 +42,7 @@ public class OperationsFrame extends JFrame {
         JButton logout=button("ĐĂNG XUẤT");
         logout.addActionListener(e->{
             int answer=JOptionPane.showConfirmDialog(this,"Bạn có chắc muốn đăng xuất?","Xác nhận đăng xuất",JOptionPane.YES_NO_OPTION);
-            if(answer==JOptionPane.YES_OPTION){dispose();new LoginFrame().setVisible(true);}
+            if(answer==JOptionPane.YES_OPTION){Session.clear();dispose();new LoginFrame().setVisible(true);}
         });
         right.add(user);right.add(logout);p.add(right,BorderLayout.EAST);
         return p;
