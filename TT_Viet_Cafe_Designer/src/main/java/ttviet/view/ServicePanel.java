@@ -105,6 +105,9 @@ public class ServicePanel extends JPanel {
             public void removeUpdate(javax.swing.event.DocumentEvent e){renderProducts();}
             public void changedUpdate(javax.swing.event.DocumentEvent e){renderProducts();}
         });
+        addComponentListener(new ComponentAdapter(){
+            @Override public void componentShown(ComponentEvent e){reloadTables();loadOpenOrderInfo();}
+        });
         loadProducts(); reloadTables();
     }
 
@@ -172,7 +175,7 @@ public class ServicePanel extends JPanel {
         try(Connection c=DB.getConnection()){
             // Dong bo mau ban tu don chua thanh toan, tranh ban van do sau khi da thu tien.
             try(Statement sync=c.createStatement()){
-                sync.executeUpdate("UPDATE cafe_tables t SET t.status=CASE " +
+                sync.executeUpdate("UPDATE cafe_tables t SET status=CASE " +
                     "WHEN EXISTS(SELECT 1 FROM orders o WHERE o.table_id=t.id AND o.payment_status='Chờ thanh toán' AND o.status='Đang phục vụ') THEN 'Đang phục vụ' " +
                     "WHEN t.status='Đang phục vụ' THEN 'Trống' ELSE t.status END");
             }
