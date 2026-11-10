@@ -1,0 +1,1 @@
+Thu muc chua anh mon an JPG/PNG. Chua co anh that do chua duoc cung cap bo anh san pham. Them anh vao day khi co.
