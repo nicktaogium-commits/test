@@ -1,6 +1,7 @@
 package ttviet.view;
 
 import ttviet.dao.DB;
+import ttviet.dao.Session;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.print.PrinterException;
@@ -24,7 +25,11 @@ public class InvoiceDialog extends JDialog {
         preview.setBackground(Color.WHITE);
         add(new JScrollPane(preview), BorderLayout.CENTER);
 
+        String role = Session.getRole()==null ? "" : Session.getRole().trim().toLowerCase(Locale.ROOT);
+        boolean canPay = role.equals("manager") || role.equals("admin") || role.equals("quản lý") ||
+            role.equals("quan ly") || role.equals("cashier") || role.equals("thu ngân") || role.equals("thu ngan");
         JButton pay = new JButton("THANH TOÁN");
+        pay.setVisible(canPay);
         JButton print = new JButton("IN HÓA ĐƠN");
         JButton close = new JButton("ĐÓNG");
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
