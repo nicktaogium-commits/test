@@ -2,6 +2,7 @@ package ttviet.view;
 
 import ttviet.dao.DB;
 import ttviet.dao.PaymentDAO;
+import ttviet.dao.Session;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -26,6 +27,13 @@ public class PaymentDialog extends JDialog {
     public PaymentDialog(Window owner,long orderId) {
         super(owner,"THANH TOÁN HÓA ĐƠN",ModalityType.APPLICATION_MODAL);
         this.orderId=orderId;
+        String role=Session.getRole()==null?"":Session.getRole().trim().toLowerCase(Locale.ROOT);
+        boolean allowed=role.equals("cashier")||role.equals("thu ngân")||role.equals("thu ngan")||
+            role.equals("manager")||role.equals("admin")||role.equals("quản lý")||role.equals("quan ly");
+        if(!allowed){
+            JOptionPane.showMessageDialog(owner,"Chỉ thu ngân hoặc quản lý mới được mở chức năng thanh toán.","Không đủ quyền",JOptionPane.WARNING_MESSAGE);
+            dispose(); return;
+        }
         setSize(560,620);setMinimumSize(new Dimension(500,560));setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10,10));
         getContentPane().setBackground(new Color(35,36,39));
