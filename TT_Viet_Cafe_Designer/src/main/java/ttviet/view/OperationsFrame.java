@@ -31,14 +31,15 @@ public class OperationsFrame extends JFrame {
         tabs.addTab("Sơ đồ bàn",tables()); tabs.addTab("Nhân viên",staff());
         tabs.addTab("Phân ca",shifts()); tabs.addTab("Bồi thường",damages());
         tabs.addTab("Hóa đơn",history()); tabs.addTab("Báo cáo",reports());
-        styleTabs(); refreshAll();
+        styleTabs(); applyRolePermissions(); refreshAll();
     }
     private JPanel header(){
         JPanel p=new JPanel(new BorderLayout());p.setBackground(new Color(17,18,19));p.setBorder(new EmptyBorder(15,24,15,24));
         JLabel brand=new JLabel("<html><span style='color:#CDA05C;font-size:25pt;font-weight:bold'>T &amp; T VIET</span><br><span style='color:#D9C9A9'>CAFE • FAST FOOD &nbsp; | &nbsp; HỆ THỐNG QUẢN LÝ</span></html>");
         p.add(brand,BorderLayout.WEST);
         JPanel right=new JPanel(new FlowLayout(FlowLayout.RIGHT,12,5));right.setOpaque(false);
-        JLabel user=new JLabel("QUẢN LÝ  •  CA LÀM VIỆC",SwingConstants.RIGHT);user.setForeground(GOLD);
+        String roleLabel=roleLabel();
+        JLabel user=new JLabel(Session.getFullName()+"  •  "+roleLabel,SwingConstants.RIGHT);user.setForeground(GOLD);
         JButton logout=button("ĐĂNG XUẤT");
         logout.addActionListener(e->{
             int answer=JOptionPane.showConfirmDialog(this,"Bạn có chắc muốn đăng xuất?","Xác nhận đăng xuất",JOptionPane.YES_NO_OPTION);
@@ -46,6 +47,68 @@ public class OperationsFrame extends JFrame {
         });
         right.add(user);right.add(logout);p.add(right,BorderLayout.EAST);
         return p;
+    }
+    private String normalizedRole(){
+        return Session.getRole()==null?"":Session.getRole().trim().toLowerCase(java.util.Locale.ROOT);
+    }
+    private boolean isManager(){
+        String r=normalizedRole();
+        return r.equals("manager")||r.equals("admin")||r.equals("quản lý")||r.equals("quan ly");
+    }
+    private boolean isCashier(){
+        String r=normalizedRole();
+        return r.equals("cashier")||r.equals("thu ngân")||r.equals("thu ngan");
+    }
+    private boolean isService(){
+        String r=normalizedRole();
+        return r.equals("staff")||r.equals("service")||r.equals("phục vụ")||r.equals("phuc vu");
+    }
+    private boolean isKitchen(){
+        String r=normalizedRole();
+        return r.equals("warehouse")||r.equals("kitchen")||r.equals("bếp")||r.equals("bep");
+    }
+    private String roleLabel(){
+        if(isManager())return "QUẢN LÝ";
+        if(isCashier())return "THU NGÂN";
+        if(isService())return "PHỤC VỤ";
+        if(isKitchen())return "BẾP";
+        return "CHƯA PHÂN QUYỀN";
+    }
+    private void applyRolePermissions(){
+        if(isManager())return;
+        java.util.Set<String> allowed=new java.util.HashSet<>();
+        if(isCashier())java.util.Collections.addAll(allowed,"Tổng quan","Sơ đồ bàn","Hóa đơn","Báo cáo");
+        else if(isService())java.util.Collections.addAll(allowed,"Sơ đồ bàn","Thực đơn & giá");
+        else if(isKitchen())java.util.Collections.addAll(allowed,"Thực đơn & giá");
+        else allowed.add("Tổng quan");
+        for(int i=tabs.getTabCount()-1;i>=0;i--)
+            if(!allowed.contains(tabs.getTitleAt(i)))tabs.removeTabAt(i);
+
+        // Nhân viên phục vụ và bếp chỉ được xem thực đơn, không được sửa giá/món.
+        if((isService()||isKitchen())&&tabs.indexOfTab("Thực đơn & giá")>=0){
+            Component page=tabs.getComponentAt(tabs.indexOfTab("Thực đơn & giá"));
+            if(page instanceof JPanel){
+                Component south=((JPanel)page).getLayout() instanceof BorderLayout
+                    ?((BorderLayout)((JPanel)page).getLayout()).getLayoutComponent(BorderLayout.SOUTH):null;
+                if(south!=null)south.setVisible(false);
+            }
+        }
+        // Thu ngân được tra cứu/in hóa đơn; không được xóa dữ liệu hóa đơn.
+        // Bếp chỉ xem danh mục món, không được truy cập nghiệp vụ quản trị.
+        for(Component c:((JPanel)getContentPane()).getComponents()){
+            if(c instanceof JPanel){
+                for(Component child:((JPanel)c).getComponents()){
+                    if(child instanceof JButton && ((JButton)child).getName()!=null){
+                        String n=((JButton)child).getName();
+                        if(n.startsWith("shortcut_")){
+                            int ix=Integer.parseInt(n.substring(9));
+                            boolean visible=isCashier()&&(ix==0||ix==2||ix==6||ix==7);
+                            child.setVisible(visible);
+                        }
+                    }
+                }
+            }
+        }
     }
     private void styleTabs(){tabs.setBackground(PANEL);tabs.setForeground(TEXT);tabs.setFont(new Font("SansSerif",Font.BOLD,13));}
     private JPanel page(String title,String desc){
@@ -65,8 +128,18 @@ public class OperationsFrame extends JFrame {
         metrics.add(card("DOANH THU HÔM NAY",revenueValue));metrics.add(card("HÓA ĐƠN HÔM NAY",ordersValue));metrics.add(card("BÀN ĐANG CÓ KHÁCH",tablesValue));
         JPanel shortcuts=new JPanel(new GridLayout(2,4,12,12));shortcuts.setOpaque(false);
         String[] names={"Gọi món / Thanh toán","Quản lý thực đơn","Sơ đồ bàn","Nhân viên","Phân ca làm","Bồi thường tài sản","Lịch sử hóa đơn","Báo cáo doanh thu"};
-        int[] targets={2,1,2,3,4,5,6,7};
-        for(int i=0;i<names.length;i++){final int ix=targets[i];final int item=i;JButton b=button(names[i]);b.addActionListener(e->{if(item==0)new OrderFrame().setVisible(true);else tabs.setSelectedIndex(ix);});shortcuts.add(b);}
+        String[] targetTitles={"","Thực đơn & giá","Sơ đồ bàn","Nhân viên","Phân ca","Bồi thường","Hóa đơn","Báo cáo"};
+        for(int i=0;i<names.length;i++){
+            final int item=i;
+            JButton b=button(names[i]);
+            b.addActionListener(e->{
+                if(item==0){new OrderFrame().setVisible(true);return;}
+                for(int j=0;j<tabs.getTabCount();j++)
+                    if(tabs.getTitleAt(j).equals(targetTitles[item])){tabs.setSelectedIndex(j);return;}
+            });
+            b.setName("shortcut_"+i);
+            shortcuts.add(b);
+        }
         JPanel center=new JPanel(new BorderLayout(12,20));center.setOpaque(false);center.add(metrics,BorderLayout.NORTH);center.add(shortcuts,BorderLayout.CENTER);
         JLabel note=new JLabel("<html><div style='color:#D9C9A9;padding:18px'><h2>VẬN HÀNH T &amp; T VIET</h2><p>• Theo dõi bàn theo trạng thái: xanh - trống, đỏ - đang phục vụ, vàng - đặt trước.</p><p>• Quản lý món, giá, tồn trạng thái còn/hết; tạo đơn và thanh toán.</p><p>• Quản lý nhân viên, ca làm, tài sản hư hỏng và báo cáo doanh thu.</p></div></html>");
         note.setOpaque(true);note.setBackground(PANEL);note.setBorder(new LineBorder(new Color(92,72,43),1,true));
