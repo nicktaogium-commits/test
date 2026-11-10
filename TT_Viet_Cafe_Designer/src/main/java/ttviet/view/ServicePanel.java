@@ -17,13 +17,15 @@ import java.util.List;
 
 /** Man hinh phuc vu: so do ban, menu co anh va gio mon trong cung mot muc. */
 public class ServicePanel extends JPanel {
-    private static final Color BG=new Color(24,25,27), PANEL=new Color(37,38,41);
-    private static final Color GOLD=new Color(205,160,92), TEXT=new Color(245,239,226);
+    private static final Color BG=new Color(242,248,252), PANEL=Color.WHITE;
+    private static final Color GOLD=new Color(30,112,166), TEXT=new Color(38,55,68);
+    private final CardLayout workspaceLayout=new CardLayout();
+    private final JPanel workspace=new JPanel(workspaceLayout);
     private final JPanel tableGrid=new JPanel(new GridLayout(0,3,8,8));
     private final JPanel menuGrid=new JPanel(new GridLayout(0,3,9,9));
     private final JTextField search=new JTextField();
-    private final DefaultTableModel cart=new DefaultTableModel(new String[]{"Món","Đơn giá","Số lượng","Thành tiền"},0) {
-        @Override public boolean isCellEditable(int r,int c){return false;}
+    private final DefaultTableModel cart=new DefaultTableModel(new String[]{"Món","Đơn giá","Số lượng","Thành tiền","Ghi chú"},0) {
+        @Override public boolean isCellEditable(int r,int c){return c==4;}
     };
     private final JTable cartTable=new JTable(cart);
     private final JLabel selectedLabel=new JLabel("Chưa chọn bàn");
@@ -38,12 +40,17 @@ public class ServicePanel extends JPanel {
     public ServicePanel() {
         setLayout(new BorderLayout(10,10)); setBackground(BG);
         setBorder(new EmptyBorder(14,16,14,16));
-        JLabel heading=new JLabel("PHỤC VỤ • SƠ ĐỒ BÀN & GỌI MÓN");
+        JLabel heading=new JLabel("PHỤC VỤ • QUẢN LÝ BÀN & GỌI MÓN");
         heading.setForeground(GOLD); heading.setFont(new Font("SansSerif",Font.BOLD,22));
         JLabel legend=new JLabel("● Trống     ● Đang phục vụ     ● Đặt trước     |     Chọn bàn rồi chọn món");
         legend.setForeground(TEXT);
-        JPanel header=new JPanel(new BorderLayout(4,4)); header.setOpaque(false);
+        JPanel header=new JPanel(new BorderLayout(8,8)); header.setOpaque(false);
         header.add(heading,BorderLayout.NORTH); header.add(legend,BorderLayout.SOUTH);
+        JPanel navigation=new JPanel(new FlowLayout(FlowLayout.LEFT,8,4)); navigation.setOpaque(false);
+        JButton showTables=button("SƠ ĐỒ BÀN"), showMenu=button("THỰC ĐƠN / GỌI MÓN");
+        showTables.addActionListener(e->workspaceLayout.show(workspace,"TABLES"));
+        showMenu.addActionListener(e->{if(selectedTableId==null)JOptionPane.showMessageDialog(this,"Vui lòng chọn bàn trước.");else workspaceLayout.show(workspace,"ORDER");});
+        navigation.add(showTables); navigation.add(showMenu); header.add(navigation,BorderLayout.SOUTH);
         add(header,BorderLayout.NORTH);
 
         tableGrid.setBackground(BG);
@@ -95,13 +102,11 @@ public class ServicePanel extends JPanel {
         cartArea.add(bottom,BorderLayout.SOUTH);
 
         JPanel right=new JPanel(new BorderLayout(8,8)); right.setBackground(PANEL);
-        right.add(info,BorderLayout.NORTH);
-        right.add(menuArea,BorderLayout.CENTER);
-        right.add(cartArea,BorderLayout.SOUTH);
-        JSplitPane split=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,tableScroll,right);
-        split.setResizeWeight(0.30); split.setDividerLocation(330); split.setContinuousLayout(true);
-        split.setOneTouchExpandable(true); split.setBorder(null);
-        add(split,BorderLayout.CENTER);
+        right.setBorder(new EmptyBorder(10,10,10,10));
+        right.add(info,BorderLayout.NORTH); right.add(menuArea,BorderLayout.CENTER); right.add(cartArea,BorderLayout.SOUTH);
+        workspace.setBackground(BG);
+        workspace.add(tableScroll,"TABLES"); workspace.add(right,"ORDER");
+        add(workspace,BorderLayout.CENTER);
 
         search.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){
             public void insertUpdate(javax.swing.event.DocumentEvent e){renderProducts();}
@@ -119,8 +124,9 @@ public class ServicePanel extends JPanel {
         Product(int id,String n,BigDecimal p,String img){this.id=id;name=n;price=p;imagePath=img;}
     }
     private JButton button(String text){
-        JButton b=new JButton(text); b.setFocusPainted(false);
-        b.setBackground(new Color(92,66,34)); b.setForeground(TEXT);
+        JButton b=new JButton(text); b.setFocusPainted(false); b.setOpaque(true);
+        b.setBackground(new Color(225,241,250)); b.setForeground(new Color(25,91,135));
+        b.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(178,213,232)),new EmptyBorder(8,12,8,12)));
         b.setFont(new Font("SansSerif",Font.BOLD,11)); return b;
     }
     private void loadProducts(){
@@ -136,9 +142,9 @@ public class ServicePanel extends JPanel {
         String term=search.getText()==null?"":search.getText().trim().toLowerCase(new Locale("vi","VN"));
         for(Product p:allProducts){
             if(!p.name.toLowerCase(new Locale("vi","VN")).contains(term))continue;
-            JPanel card=new JPanel(new BorderLayout(4,4)); card.setBackground(new Color(48,48,51));
-            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(83,70,52)),
-                new EmptyBorder(5,5,5,5)));
+            JPanel card=new JPanel(new BorderLayout(10,4)); card.setBackground(Color.WHITE);
+            card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(215,230,239)),
+                new EmptyBorder(7,7,7,7)));
             JLabel picture=new JLabel("🍽",SwingConstants.CENTER);
             picture.setForeground(GOLD); picture.setFont(new Font("SansSerif",Font.PLAIN,38));
             picture.setPreferredSize(new Dimension(130,72));
@@ -150,9 +156,11 @@ public class ServicePanel extends JPanel {
             price.setForeground(GOLD); price.setFont(new Font("SansSerif",Font.BOLD,13));
             JButton add=button("+ THÊM");
             add.addActionListener(e->addProduct(p));
-            card.add(picture,BorderLayout.NORTH); card.add(name,BorderLayout.CENTER);
-            JPanel foot=new JPanel(new GridLayout(2,1,2,2)); foot.setOpaque(false);
-            foot.add(price); foot.add(add); card.add(foot,BorderLayout.SOUTH);
+            JPanel details=new JPanel(new GridLayout(3,1,3,3)); details.setOpaque(false);
+            name.setHorizontalAlignment(SwingConstants.LEFT); price.setHorizontalAlignment(SwingConstants.LEFT);
+            details.add(name); details.add(price); details.add(add);
+            picture.setPreferredSize(new Dimension(112,78));
+            card.add(picture,BorderLayout.WEST); card.add(details,BorderLayout.CENTER);
             menuGrid.add(card);
         }
         if(menuGrid.getComponentCount()==0){
@@ -241,12 +249,12 @@ public class ServicePanel extends JPanel {
         if(draft!=null)for(Object[] row:draft)cart.addRow(row);
         updateTotal();
         selectedLabel.setText("Đang chọn: "+tableNames.get(id));
-        loadOpenOrderInfo();reloadTables();
+        loadOpenOrderInfo();reloadTables();workspaceLayout.show(workspace,"ORDER");
     }
     private void saveDraftCart(int tableId){
         List<Object[]> rows=new ArrayList<>();
         for(int i=0;i<cart.getRowCount();i++)
-            rows.add(new Object[]{cart.getValueAt(i,0),cart.getValueAt(i,1),cart.getValueAt(i,2),cart.getValueAt(i,3)});
+            rows.add(new Object[]{cart.getValueAt(i,0),cart.getValueAt(i,1),cart.getValueAt(i,2),cart.getValueAt(i,3),cart.getValueAt(i,4)});
         if(rows.isEmpty())draftCarts.remove(tableId);else draftCarts.put(tableId,rows);
     }
     private void transferSelectedTable(){
@@ -280,15 +288,18 @@ public class ServicePanel extends JPanel {
     }
     private void addProduct(Product p){
         if(selectedTableId==null){JOptionPane.showMessageDialog(this,"Vui lòng chọn bàn trên sơ đồ trước.");return;}
-        String input=JOptionPane.showInputDialog(this,"Số lượng "+p.name+":","1");
-        if(input==null)return;
+        JTextField quantity=new JTextField("1"); JTextField note=new JTextField();
+        JPanel form=new JPanel(new GridLayout(0,1,5,5));
+        form.add(new JLabel("Số lượng "+p.name)); form.add(quantity);
+        form.add(new JLabel("Ghi chú cho bếp / phục vụ (không bắt buộc)")); form.add(note);
+        if(JOptionPane.showConfirmDialog(this,form,"Thêm món",JOptionPane.OK_CANCEL_OPTION)!=JOptionPane.OK_OPTION)return;
         try{
-            int qty=Integer.parseInt(input.trim());if(qty<1||qty>99)throw new NumberFormatException();
-            int row=-1;
-            for(int i=0;i<cart.getRowCount();i++)if(p.name.equals(cart.getValueAt(i,0))){row=i;break;}
+            int qty=Integer.parseInt(quantity.getText().trim());if(qty<1||qty>99)throw new NumberFormatException();
+            String itemNote=note.getText().trim(); int row=-1;
+            for(int i=0;i<cart.getRowCount();i++)if(p.name.equals(cart.getValueAt(i,0)) && itemNote.equals(String.valueOf(cart.getValueAt(i,4)))){row=i;break;}
             if(row>=0){int next=Integer.parseInt(cart.getValueAt(row,2).toString())+qty;
                 cart.setValueAt(next,row,2);cart.setValueAt(p.price.multiply(BigDecimal.valueOf(next)),row,3);
-            }else cart.addRow(new Object[]{p.name,p.price,qty,p.price.multiply(BigDecimal.valueOf(qty))});
+            }else cart.addRow(new Object[]{p.name,p.price,qty,p.price.multiply(BigDecimal.valueOf(qty)),itemNote});
             updateTotal();
         }catch(Exception ex){JOptionPane.showMessageDialog(this,"Số lượng phải từ 1 đến 99.");}
     }
@@ -309,7 +320,7 @@ public class ServicePanel extends JPanel {
         if(orderId>0){
             cart.setRowCount(0);updateTotal();reloadTables();loadOpenOrderInfo();
             draftCarts.remove(selectedTableId);
-            new InvoiceDialog(SwingUtilities.getWindowAncestor(this),orderId).setVisible(true);
+            JOptionPane.showMessageDialog(this,"Đã lưu món thành công. Bàn đang ở trạng thái chờ thanh toán. Bạn có thể chuyển sang bàn khác hoặc tiếp tục gọi thêm món.");
             reloadTables();loadOpenOrderInfo();
         }
     }
