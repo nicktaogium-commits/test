@@ -140,7 +140,7 @@ public class ServicePanel extends JPanel {
             JLabel picture=new JLabel("🍽",SwingConstants.CENTER);
             picture.setForeground(GOLD); picture.setFont(new Font("SansSerif",Font.PLAIN,38));
             picture.setPreferredSize(new Dimension(130,72));
-            ImageIcon icon=loadProductIcon(p.imagePath,124,72);
+            ImageIcon icon=loadProductIcon(p.imagePath,124,72,p.name);
             if(icon!=null){picture.setText("");picture.setIcon(icon);}
             JLabel name=new JLabel("<html><center>"+escape(p.name)+"</center></html>",SwingConstants.CENTER);
             name.setForeground(TEXT); name.setFont(new Font("SansSerif",Font.BOLD,11));
@@ -159,7 +159,7 @@ public class ServicePanel extends JPanel {
         }
         menuGrid.revalidate();menuGrid.repaint();
     }
-    private ImageIcon loadProductIcon(String path,int w,int h){
+    private ImageIcon loadProductIcon(String path,int w,int h,String productName){
         if(path!=null&&!path.isBlank()){
             File f=new File(path);
             if(!f.isAbsolute()&&!f.exists())f=new File("src/main/resources/"+path);
@@ -176,9 +176,26 @@ public class ServicePanel extends JPanel {
         g.setColor(new Color(247,239,220));g.fillRoundRect(2,2,w-4,h-4,16,16);
         g.setColor(new Color(213,195,160));g.fillOval(w/2-38,h/2-24,76,48);
         g.setColor(Color.WHITE);g.fillOval(w/2-32,h/2-18,64,36);
-        g.setColor(new Color(198,139,65));g.fillOval(w/2-25,h/2-13,50,26);
-        g.setColor(new Color(178,61,43));
-        for(int i=0;i<5;i++)g.fillOval(w/2-17+(i%3)*14,h/2-8+(i/3)*12,7,7);
+        String n=productName.toLowerCase(new Locale("vi","VN"));
+        if(n.contains("pizza")){
+            g.setColor(new Color(198,139,65));g.fillOval(w/2-25,h/2-13,50,26);
+            g.setColor(new Color(178,61,43));for(int i=0;i<5;i++)g.fillOval(w/2-17+(i%3)*14,h/2-8+(i/3)*12,7,7);
+        }else if(n.contains("bánh mì")){
+            g.setColor(new Color(184,119,48));g.fillRoundRect(w/2-30,h/2-10,60,20,18,18);
+            g.setColor(new Color(83,135,66));g.drawLine(w/2-18,h/2,w/2+18,h/2);
+            g.setColor(new Color(178,61,43));g.drawLine(w/2-14,h/2+5,w/2+14,h/2+5);
+        }else if(n.contains("cơm")){
+            g.setColor(new Color(250,250,240));g.fillRoundRect(w/2-24,h/2-14,48,28,12,12);
+            g.setColor(new Color(210,151,71));g.fillOval(w/2-10,h/2-6,20,12);
+        }else if(n.contains("cafe")||n.contains("trà")||n.contains("rau")||n.contains("dừa")||n.contains("cam")||n.contains("chanh")||n.contains("đá")){
+            g.setColor(new Color(89,155,119));g.fillRoundRect(w/2-15,h/2-17,30,36,8,8);
+            g.setColor(new Color(220,241,221));g.fillRoundRect(w/2-10,h/2-12,20,25,5,5);
+            g.setColor(new Color(180,73,45));g.fillRect(w/2-9,h/2+3,18,9);
+            g.setColor(new Color(90,65,40));g.drawLine(w/2+4,h/2-17,w/2+14,h/2-28);
+        }else{
+            g.setColor(new Color(198,139,65));g.fillRoundRect(w/2-20,h/2-15,40,30,10,10);
+            g.setColor(new Color(178,61,43));g.fillOval(w/2-9,h/2-7,18,14);
+        }
         g.dispose();
         return new ImageIcon(art);
     }
