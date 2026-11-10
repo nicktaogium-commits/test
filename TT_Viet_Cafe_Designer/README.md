@@ -1,11 +1,27 @@
-# T & T Viet Cafe - NetBeans 30
-Mở thư mục này bằng File > Open Project trong Apache NetBeans IDE 30 (Maven). Java 17+, XAMPP MySQL.
+# T & T VIET — Quản lý nhà hàng / quán cà phê
 
-1. Chạy database/tt_viet.sql bằng phpMyAdmin.
-2. Sửa user/password MySQL trong src/main/java/ttviet/dao/DB.java nếu cần.
-3. Run project, tài khoản mặc định admin / 123456.
-4. Mở các JFrame trong src/main/java/ttviet/view và chọn tab Design. Mỗi JFrame có cặp .java + .form đi cùng tên để chỉnh bằng GUI Builder.
+Dự án Java Swing Maven, cấu hình chạy với Apache NetBeans IDE 25 và JDK 17+.
 
-Có LoginFrame, MainFrame, MenuFrame, OrderFrame, HistoryFrame. Giao diện tông đen - đồng vàng. Danh mục SQL chứa 37 món theo menu đã cung cấp. Ảnh món thật chưa được thêm vì chưa có bộ ảnh gốc; thư mục assets/food để bổ sung sau.
+## Mở và chạy
+1. NetBeans 25 → File → Open Project → chọn thư mục `TT_Viet_Cafe_Designer`.
+2. Chờ Maven tải MySQL Connector/J.
+3. Mở XAMPP, bật MySQL; vào phpMyAdmin và Import `database/tt_viet.sql`.
+4. Kiểm tra `src/main/java/ttviet/dao/DB.java`: mặc định host localhost, database tt_viet_cafe, user root, mật khẩu rỗng.
+5. Main class: `ttviet.App`. Nếu NetBeans hỏi, chọn package `ttviet` → `App.java`.
+6. Chạy F6. Tài khoản mẫu: admin / 123456.
 
-Lưu ý: đây là bản nền học tập; thanh toán hiện mới tính tổng và chưa tích hợp máy in/QR. Phần lưu hóa đơn chi tiết cần hoàn thiện thêm trước khi dùng kinh doanh thực tế.
+## Các JFrame hiện có
+- Đăng nhập: `LoginFrame`
+- Trang tổng quan: `MainFrame`
+- Thực đơn: `MenuFrame`
+- Gọi món / thanh toán: `OrderFrame`
+- Lịch sử hóa đơn: `HistoryFrame`
+- Sơ đồ bàn: `TableFrame`
+
+Mỗi JFrame hiện có cặp file .java + .form. Mở file trong package `ttviet.view`, chọn tab Design để chỉnh sửa bằng GUI Builder.
+
+## Phạm vi đề tài cần hoàn thiện
+Đăng nhập/đăng xuất theo vai trò và ca làm; sơ đồ bàn/khu vực theo trạng thái; nhân viên và phân ca; thực đơn, nhóm món, giá và trạng thái còn/hết; order, ghi chú, chuyển/gộp/tách bàn; thanh toán và hóa đơn; ghi nhận bồi thường tài sản; báo cáo doanh thu và món bán chạy.
+
+## Tình trạng
+Đây là bản nền đang được mở rộng theo đề tài, chưa phải phần mềm đã nghiệm thu hoặc sẵn sàng dùng kinh doanh. Cần chạy thử từng luồng nghiệp vụ, kiểm tra dữ liệu MySQL và hoàn thiện các màn hình còn thiếu. Ảnh món ăn thật chưa được cung cấp nên chưa thể gắn ảnh thực tế cho từng món.
