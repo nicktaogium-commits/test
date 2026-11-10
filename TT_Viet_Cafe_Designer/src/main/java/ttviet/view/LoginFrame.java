@@ -1,7 +1,9 @@
 package ttviet.view;
 import javax.swing.*;import java.awt.*;import ttviet.dao.AuthDAO;
 public class LoginFrame extends JFrame {
+ //GEN-BEGIN:variables
  private JLabel lblTitle,lblUser,lblPass;private JTextField txtUsername;private JPasswordField txtPassword;private JButton btnLogin,btnExit;
+ //GEN-END:variables
  public LoginFrame(){initComponents();}
  //GEN-BEGIN:initComponents
  private void initComponents(){
