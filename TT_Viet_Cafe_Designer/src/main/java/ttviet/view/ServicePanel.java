@@ -70,10 +70,13 @@ public class ServicePanel extends JPanel {
         JPanel actions=new JPanel(new FlowLayout(FlowLayout.RIGHT)); actions.setOpaque(false);
         actions.add(remove); actions.add(refresh); actions.add(save);
         bottom.add(totalLabel,BorderLayout.WEST); bottom.add(actions,BorderLayout.EAST);
+        JPanel cartArea=new JPanel(new BorderLayout(6,6));
+        cartArea.setOpaque(false);
+        cartArea.add(cartScroll,BorderLayout.CENTER);
+        cartArea.add(bottom,BorderLayout.SOUTH);
         orderPanel.add(info,BorderLayout.NORTH);
         orderPanel.add(addControls,BorderLayout.CENTER);
-        orderPanel.add(cartScroll,BorderLayout.SOUTH);
-        orderPanel.add(bottom,BorderLayout.PAGE_END);
+        orderPanel.add(cartArea,BorderLayout.SOUTH);
 
         JSplitPane split=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,tableScroll,orderPanel);
         split.setResizeWeight(0.34); split.setBorder(null);
