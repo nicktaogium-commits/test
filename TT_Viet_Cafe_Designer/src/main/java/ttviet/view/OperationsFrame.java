@@ -94,11 +94,6 @@ public class OperationsFrame extends JFrame {
             }
         }
     }
-                    }
-                }
-            }
-        }
-    }
     private void styleTabs(){tabs.setBackground(PANEL);tabs.setForeground(TEXT);tabs.setFont(new Font("SansSerif",Font.BOLD,13));}
     private JPanel page(String title,String desc){
         JPanel p=new JPanel(new BorderLayout(12,12));p.setBackground(BG);p.setBorder(new EmptyBorder(20,22,20,22));
