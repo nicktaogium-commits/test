@@ -121,7 +121,7 @@ public class OperationsFrame extends JFrame {
                     if(tabs.getTitleAt(j).equals(targetTitles[item])){tabs.setSelectedIndex(j);return;}
             });
             b.setName("shortcut_"+i);
-            b.setVisible(isManager() || ((isCashier()||isService()) && (i==0||i==2||i==6||i==7)));
+            b.setVisible(isManager() || (isCashier() && (i==0||i==2||i==6||i==7)) || (isService() && (i==0||i==2)));
             shortcuts.add(b);
         }
         JPanel center=new JPanel(new BorderLayout(12,20));center.setOpaque(false);center.add(metrics,BorderLayout.NORTH);center.add(shortcuts,BorderLayout.CENTER);
