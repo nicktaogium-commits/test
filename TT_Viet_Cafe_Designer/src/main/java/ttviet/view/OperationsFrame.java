@@ -68,7 +68,7 @@ public class OperationsFrame extends JFrame {
     private JButton button(String s){JButton b=new JButton(s);b.setFocusPainted(false);b.setBackground(new Color(92,66,34));b.setForeground(TEXT);b.setFont(new Font("SansSerif",Font.BOLD,13));b.setBorder(new CompoundBorder(new LineBorder(GOLD,1,true),new EmptyBorder(14,10,14,10)));return b;}
     private JTable table(String... cols){JTable t=new JTable(new DefaultTableModel(cols,0){public boolean isCellEditable(int r,int c){return false;}});t.setRowHeight(29);t.setFont(new Font("SansSerif",Font.PLAIN,13));t.getTableHeader().setFont(new Font("SansSerif",Font.BOLD,13));t.setSelectionBackground(new Color(105,78,42));return t;}
     private JScrollPane scroll(JTable t){JScrollPane s=new JScrollPane(t);s.getViewport().setBackground(PANEL);s.setBorder(new LineBorder(new Color(80,68,49)));return s;}
-    private JPanel actions(JButton... bs){JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,9,4));p.setOpaque(false);for(JButton b:bs)p.add(b);return p;}
+    private JPanel actions(Component... items){JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,9,4));p.setOpaque(false);for(Component item:items){if(item instanceof JLabel){item.setForeground(MUTED);}p.add(item);}return p;}
     private JPanel products(){
         JPanel p=page("THỰC ĐƠN & GIÁ","Thêm, sửa, xóa món; tìm theo tên; bật/tắt tình trạng còn hàng.");
         productTable=table("Mã","Tên món","Nhóm món","Giá (VNĐ)","Trạng thái");
