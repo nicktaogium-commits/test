@@ -1,0 +1,1 @@
+Đặt ảnh món ăn thật của quán vào thư mục này. Nên đặt tên ảnh theo mã hoặc tên món, ví dụ pizza-mini-xuc-xich.jpg. Chưa có ảnh thật được cung cấp nên thư mục hiện chỉ có hướng dẫn.
