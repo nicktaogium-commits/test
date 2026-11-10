@@ -28,7 +28,7 @@ public class OperationsFrame extends JFrame {
         getContentPane().setBackground(BG); setLayout(new BorderLayout());
         add(header(),BorderLayout.NORTH); add(tabs,BorderLayout.CENTER);
         tabs.addTab("Tổng quan",dashboard()); tabs.addTab("Thực đơn & giá",products());
-        tabs.addTab("Sơ đồ bàn",tables()); tabs.addTab("Nhân viên",staff());
+        tabs.addTab("Phục vụ",new ServicePanel()); tabs.addTab("Nhân viên",staff());
         tabs.addTab("Phân ca",shifts()); tabs.addTab("Bồi thường",damages());
         tabs.addTab("Hóa đơn",history()); tabs.addTab("Báo cáo",reports());
         styleTabs(); applyRolePermissions(); refreshAll();
@@ -85,7 +85,7 @@ public class OperationsFrame extends JFrame {
             if(!allowed.contains(tabs.getTitleAt(i)))tabs.removeTabAt(i);
 
         // Nhân viên phục vụ và bếp chỉ được xem thực đơn, không được sửa giá/món.
-        if((isService()||isKitchen())&&tabs.indexOfTab("Thực đơn & giá")>=0){
+        if(isKitchen()&&tabs.indexOfTab("Thực đơn & giá")>=0){
             Component page=tabs.getComponentAt(tabs.indexOfTab("Thực đơn & giá"));
             if(page instanceof JPanel){
                 Component south=((JPanel)page).getLayout() instanceof BorderLayout
@@ -111,8 +111,8 @@ public class OperationsFrame extends JFrame {
         revenueValue=big("0 đ");ordersValue=big("0");tablesValue=big("0");
         metrics.add(card("DOANH THU HÔM NAY",revenueValue));metrics.add(card("HÓA ĐƠN HÔM NAY",ordersValue));metrics.add(card("BÀN ĐANG CÓ KHÁCH",tablesValue));
         JPanel shortcuts=new JPanel(new GridLayout(2,4,12,12));shortcuts.setOpaque(false);
-        String[] names={"Gọi món / Thanh toán","Quản lý thực đơn","Sơ đồ bàn","Nhân viên","Phân ca làm","Bồi thường tài sản","Lịch sử hóa đơn","Báo cáo doanh thu"};
-        String[] targetTitles={"","Thực đơn & giá","Sơ đồ bàn","Nhân viên","Phân ca","Bồi thường","Hóa đơn","Báo cáo"};
+        String[] names={"Phục vụ • Sơ đồ bàn & Gọi món","Quản lý thực đơn","Sơ đồ bàn","Nhân viên","Phân ca làm","Bồi thường tài sản","Lịch sử hóa đơn","Báo cáo doanh thu"};
+        String[] targetTitles={"Phục vụ","Thực đơn & giá","Phục vụ","Nhân viên","Phân ca","Bồi thường","Hóa đơn","Báo cáo"};
         for(int i=0;i<names.length;i++){
             final int item=i;
             JButton b=button(names[i]);
@@ -122,7 +122,7 @@ public class OperationsFrame extends JFrame {
                     if(tabs.getTitleAt(j).equals(targetTitles[item])){tabs.setSelectedIndex(j);return;}
             });
             b.setName("shortcut_"+i);
-            b.setVisible(isManager() || (isCashier() && (i==0||i==2||i==6||i==7)));
+            b.setVisible(isManager() || ((isCashier()||isService()) && (i==0||i==2||i==6||i==7)));
             shortcuts.add(b);
         }
         JPanel center=new JPanel(new BorderLayout(12,20));center.setOpaque(false);center.add(metrics,BorderLayout.NORTH);center.add(shortcuts,BorderLayout.CENTER);
