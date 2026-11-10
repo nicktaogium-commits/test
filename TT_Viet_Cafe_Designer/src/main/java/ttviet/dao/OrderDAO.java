@@ -24,6 +24,10 @@ public class OrderDAO {
 
     public static long saveAndGetId(DefaultTableModel model, Integer tableId) {
         if (model == null || model.getRowCount() == 0) return -1;
+        try { requireServiceOrManager(); } catch(SQLException denied) {
+            JOptionPane.showMessageDialog(null,denied.getMessage(),"Không đủ quyền",JOptionPane.WARNING_MESSAGE);
+            return -1;
+        }
         String code = "TTV" + System.currentTimeMillis();
         String sql = "INSERT INTO orders(order_code,table_id,user_id,total,status,payment_status,payment_method) "
                    + "VALUES(?,?,?,?,'Đang phục vụ','Chờ thanh toán',NULL)";
