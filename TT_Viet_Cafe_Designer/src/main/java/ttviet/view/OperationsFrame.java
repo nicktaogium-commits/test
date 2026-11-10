@@ -75,7 +75,7 @@ public class OperationsFrame extends JFrame {
         JTextField search=new JTextField(18);JButton find=button("Tìm kiếm"),add=button("Thêm món"),edit=button("Sửa món"),del=button("Xóa món"),toggle=button("Còn / Hết"),reload=button("Làm mới");
         find.addActionListener(e->loadProducts(search.getText()));reload.addActionListener(e->loadProducts(""));
         add.addActionListener(e->productDialog(null));edit.addActionListener(e->productDialog(productTable.getSelectedRow()));del.addActionListener(e->deleteSelected(productTable,"products"));toggle.addActionListener(e->toggleProduct());
-        p.add(actions(new JLabel("Tìm món:"),search,find,add,edit,del,toggle,reload),BorderLayout.NORTH);p.add(scroll(productTable),BorderLayout.CENTER);return p;
+        p.add(actions(new JLabel("Tìm món:"),search,find,add,edit,del,toggle,reload),BorderLayout.SOUTH);p.add(scroll(productTable),BorderLayout.CENTER);return p;
     }
     private void productDialog(Integer row){
         String name="",price="";int id=-1;
@@ -99,14 +99,14 @@ public class OperationsFrame extends JFrame {
         JButton reload=button("Làm mới"),free=button("Đánh dấu trống"),busy=button("Đang phục vụ"),reserve=button("Đặt trước"),transfer=button("Chuyển bàn"),merge=button("Gộp bàn"),split=button("Tách bàn");
         reload.addActionListener(e->loadTables());free.addActionListener(e->setTableStatus("Trống"));busy.addActionListener(e->setTableStatus("Đang phục vụ"));reserve.addActionListener(e->setTableStatus("Đặt trước"));
         transfer.addActionListener(e->transferTable());merge.addActionListener(e->transferTable());split.addActionListener(e->JOptionPane.showMessageDialog(this,"Chức năng tách bàn sẽ tạo đơn riêng sau khi chọn hóa đơn đang mở."));
-        p.add(actions(reload,free,busy,reserve,transfer,merge,split),BorderLayout.NORTH);p.add(scroll(tableTable),BorderLayout.CENTER);return p;
+        p.add(actions(reload,free,busy,reserve,transfer,merge,split),BorderLayout.SOUTH);p.add(scroll(tableTable),BorderLayout.CENTER);return p;
     }
     private JPanel staff(){
         JPanel p=page("QUẢN LÝ NHÂN VIÊN","Lưu thông tin nhân viên, chức vụ, số điện thoại và trạng thái làm việc.");
         staffTable=table("Mã","Họ tên","Điện thoại","Chức vụ","Đang làm");
         JButton add=button("Thêm nhân viên"),edit=button("Sửa"),del=button("Xóa"),reload=button("Làm mới");
         add.addActionListener(e->staffDialog(null));edit.addActionListener(e->staffDialog(staffTable.getSelectedRow()));del.addActionListener(e->deleteSelected(staffTable,"employees"));reload.addActionListener(e->loadStaff());
-        p.add(actions(add,edit,del,reload),BorderLayout.NORTH);p.add(scroll(staffTable),BorderLayout.CENTER);return p;
+        p.add(actions(add,edit,del,reload),BorderLayout.SOUTH);p.add(scroll(staffTable),BorderLayout.CENTER);return p;
     }
     private void staffDialog(Integer row){
         JTextField name=new JTextField(),phone=new JTextField(),role=new JTextField("Phục vụ");
@@ -122,7 +122,7 @@ public class OperationsFrame extends JFrame {
         shiftTable=table("Mã ca","Nhân viên","Ngày","Ca","Bắt đầu","Kết thúc","Ghi chú");
         JButton add=button("Phân ca mới"),del=button("Xóa ca"),reload=button("Làm mới");
         add.addActionListener(e->shiftDialog());del.addActionListener(e->deleteSelected(shiftTable,"work_shifts"));reload.addActionListener(e->loadShifts());
-        p.add(actions(add,del,reload),BorderLayout.NORTH);p.add(scroll(shiftTable),BorderLayout.CENTER);return p;
+        p.add(actions(add,del,reload),BorderLayout.SOUTH);p.add(scroll(shiftTable),BorderLayout.CENTER);return p;
     }
     private void shiftDialog(){
         JComboBox<String> emp=new JComboBox<>();java.util.Map<String,Integer> ids=new java.util.LinkedHashMap<>();
@@ -139,7 +139,7 @@ public class OperationsFrame extends JFrame {
         damageTable=table("Mã","Mô tả","Số lượng","Đơn giá","Thành tiền","Ngày ghi nhận","Ghi chú");
         JButton add=button("Ghi nhận hư hỏng"),del=button("Xóa ghi nhận"),reload=button("Làm mới");
         add.addActionListener(e->damageDialog());del.addActionListener(e->deleteSelected(damageTable,"asset_compensations"));reload.addActionListener(e->loadDamages());
-        p.add(actions(add,del,reload),BorderLayout.NORTH);p.add(scroll(damageTable),BorderLayout.CENTER);return p;
+        p.add(actions(add,del,reload),BorderLayout.SOUTH);p.add(scroll(damageTable),BorderLayout.CENTER);return p;
     }
     private void damageDialog(){
         JTextField desc=new JTextField(),qty=new JTextField("1"),price=new JTextField("10000"),note=new JTextField();
@@ -153,7 +153,7 @@ public class OperationsFrame extends JFrame {
         historyTable=table("Mã","Mã hóa đơn","Bàn","Thời gian","Tổng tiền","Trạng thái");
         JButton reload=button("Làm mới"),detail=button("Xem chi tiết");
         reload.addActionListener(e->loadHistory());detail.addActionListener(e->showOrderDetail());
-        p.add(actions(reload,detail),BorderLayout.NORTH);p.add(scroll(historyTable),BorderLayout.CENTER);return p;
+        p.add(actions(reload,detail),BorderLayout.SOUTH);p.add(scroll(historyTable),BorderLayout.CENTER);return p;
     }
     private JPanel reports(){
         JPanel p=page("BÁO CÁO DOANH THU","Tổng hợp doanh thu theo ngày, món bán chạy và khoản bồi thường tài sản.");
