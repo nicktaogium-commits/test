@@ -28,7 +28,7 @@ public class OperationsFrame extends JFrame {
         getContentPane().setBackground(BG); setLayout(new BorderLayout());
         add(header(),BorderLayout.NORTH); add(tabs,BorderLayout.CENTER);
         tabs.addTab("Tổng quan",dashboard()); tabs.addTab("Thực đơn & giá",products());
-        tabs.addTab("Phục vụ",new ServicePanel()); tabs.addTab("Thu ngân",cashierPanel()); tabs.addTab("Nhân viên",staff());
+        tabs.addTab("Phục vụ",new ServicePanel()); tabs.addTab("Thu ngân",cashierPanel()); tabs.addTab("Bếp",new KitchenPanel()); tabs.addTab("Kho",new WarehousePanel()); tabs.addTab("Tài khoản",new AccountManagementPanel()); tabs.addTab("Nhân viên",staff());
         tabs.addTab("Phân ca",shifts()); tabs.addTab("Bồi thường",damages());
         tabs.addTab("Hóa đơn",history()); tabs.addTab("Báo cáo",reports());
         styleTabs(); applyRolePermissions(); refreshAll();
@@ -65,13 +65,15 @@ public class OperationsFrame extends JFrame {
     }
     private boolean isKitchen(){
         String r=normalizedRole();
-        return r.equals("warehouse")||r.equals("kitchen")||r.equals("bếp")||r.equals("bep");
+        return r.equals("kitchen")||r.equals("bếp")||r.equals("bep");
     }
+    private boolean isWarehouse(){String r=normalizedRole();return r.equals("warehouse")||r.equals("kho");}
     private String roleLabel(){
         if(isManager())return "QUẢN LÝ";
         if(isCashier())return "THU NGÂN";
         if(isService())return "PHỤC VỤ";
         if(isKitchen())return "BẾP";
+        if(isWarehouse())return "KHO";
         return "CHƯA PHÂN QUYỀN";
     }
     private void applyRolePermissions(){
@@ -79,20 +81,13 @@ public class OperationsFrame extends JFrame {
         java.util.Set<String> allowed=new java.util.HashSet<>();
         if(isCashier())java.util.Collections.addAll(allowed,"Tổng quan","Thu ngân","Hóa đơn","Báo cáo");
         else if(isService())java.util.Collections.addAll(allowed,"Phục vụ");
-        else if(isKitchen())java.util.Collections.addAll(allowed,"Thực đơn & giá");
+        else if(isKitchen())allowed.add("Bếp");
+        else if(isWarehouse())allowed.add("Kho");
         else allowed.add("Tổng quan");
         for(int i=tabs.getTabCount()-1;i>=0;i--)
             if(!allowed.contains(tabs.getTitleAt(i)))tabs.removeTabAt(i);
 
-        // Nhân viên phục vụ và bếp chỉ được xem thực đơn, không được sửa giá/món.
-        if(isKitchen()&&tabs.indexOfTab("Thực đơn & giá")>=0){
-            Component page=tabs.getComponentAt(tabs.indexOfTab("Thực đơn & giá"));
-            if(page instanceof JPanel){
-                Component south=((JPanel)page).getLayout() instanceof BorderLayout
-                    ?((BorderLayout)((JPanel)page).getLayout()).getLayoutComponent(BorderLayout.SOUTH):null;
-                if(south!=null)south.setVisible(false);
-            }
-        }
+        
     }
     private void styleTabs(){tabs.setBackground(PANEL);tabs.setForeground(TEXT);tabs.setFont(new Font("SansSerif",Font.BOLD,13));}
     private JPanel page(String title,String desc){
