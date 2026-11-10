@@ -15,10 +15,10 @@ import java.util.Locale;
  * Giao diện có thể chạy độc lập; các JFrame GUI Builder hiện có vẫn được giữ nguyên.
  */
 public class OperationsFrame extends JFrame {
-    private static final Color BG=new Color(24,25,27), PANEL=new Color(37,38,41),
-        GOLD=new Color(205,160,92), TEXT=new Color(245,239,226), MUTED=new Color(180,172,157);
+    private static final Color BG=new Color(242,248,252), PANEL=Color.WHITE,
+        GOLD=new Color(30,112,166), TEXT=new Color(38,55,68), MUTED=new Color(99,123,139);
     private final JTabbedPane tabs=new JTabbedPane();
-    private JTable productTable,tableTable,staffTable,shiftTable,damageTable,historyTable;
+    private JTable productTable,tableTable,staffTable,shiftTable,damageTable,historyTable,pendingPaymentTable;
     private JLabel revenueValue,ordersValue,tablesValue;
     private final NumberFormat money=NumberFormat.getNumberInstance(new Locale("vi","VN"));
 
@@ -28,13 +28,13 @@ public class OperationsFrame extends JFrame {
         getContentPane().setBackground(BG); setLayout(new BorderLayout());
         add(header(),BorderLayout.NORTH); add(tabs,BorderLayout.CENTER);
         tabs.addTab("Tổng quan",dashboard()); tabs.addTab("Thực đơn & giá",products());
-        tabs.addTab("Phục vụ",new ServicePanel()); tabs.addTab("Nhân viên",staff());
+        tabs.addTab("Phục vụ",new ServicePanel()); tabs.addTab("Thu ngân",cashierPanel()); tabs.addTab("Nhân viên",staff());
         tabs.addTab("Phân ca",shifts()); tabs.addTab("Bồi thường",damages());
         tabs.addTab("Hóa đơn",history()); tabs.addTab("Báo cáo",reports());
         styleTabs(); applyRolePermissions(); refreshAll();
     }
     private JPanel header(){
-        JPanel p=new JPanel(new BorderLayout());p.setBackground(new Color(17,18,19));p.setBorder(new EmptyBorder(15,24,15,24));
+        JPanel p=new JPanel(new BorderLayout());p.setBackground(new Color(225,241,250));p.setBorder(new EmptyBorder(15,24,15,24));
         JLabel brand=new JLabel("<html><span style='color:#CDA05C;font-size:25pt;font-weight:bold'>T &amp; T VIET</span><br><span style='color:#D9C9A9'>CAFE • FAST FOOD &nbsp; | &nbsp; HỆ THỐNG QUẢN LÝ</span></html>");
         p.add(brand,BorderLayout.WEST);
         JPanel right=new JPanel(new FlowLayout(FlowLayout.RIGHT,12,5));right.setOpaque(false);
@@ -77,7 +77,7 @@ public class OperationsFrame extends JFrame {
     private void applyRolePermissions(){
         if(isManager())return;
         java.util.Set<String> allowed=new java.util.HashSet<>();
-        if(isCashier())java.util.Collections.addAll(allowed,"Tổng quan","Phục vụ","Hóa đơn","Báo cáo");
+        if(isCashier())java.util.Collections.addAll(allowed,"Tổng quan","Thu ngân","Hóa đơn","Báo cáo");
         else if(isService())java.util.Collections.addAll(allowed,"Phục vụ");
         else if(isKitchen())java.util.Collections.addAll(allowed,"Thực đơn & giá");
         else allowed.add("Tổng quan");
@@ -130,7 +130,7 @@ public class OperationsFrame extends JFrame {
         p.add(center,BorderLayout.CENTER);p.add(note,BorderLayout.SOUTH);return p;
     }
     private JLabel big(String s){JLabel l=new JLabel(s);return l;}
-    private JButton button(String s){JButton b=new JButton(s);b.setFocusPainted(false);b.setBackground(new Color(92,66,34));b.setForeground(TEXT);b.setFont(new Font("SansSerif",Font.BOLD,13));b.setBorder(new CompoundBorder(new LineBorder(GOLD,1,true),new EmptyBorder(14,10,14,10)));return b;}
+    private JButton button(String s){JButton b=new JButton(s);b.setFocusPainted(false);b.setBackground(new Color(225,241,250));b.setForeground(new Color(25,91,135));b.setFont(new Font("SansSerif",Font.BOLD,13));b.setBorder(new CompoundBorder(new LineBorder(new Color(178,213,232),1,true),new EmptyBorder(10,10,10,10)));return b;}
     private JTable table(String... cols){JTable t=new JTable(new DefaultTableModel(cols,0){public boolean isCellEditable(int r,int c){return false;}});t.setRowHeight(29);t.setFont(new Font("SansSerif",Font.PLAIN,13));t.getTableHeader().setFont(new Font("SansSerif",Font.BOLD,13));t.setSelectionBackground(new Color(105,78,42));return t;}
     private JScrollPane scroll(JTable t){JScrollPane s=new JScrollPane(t);s.getViewport().setBackground(PANEL);s.setBorder(new LineBorder(new Color(80,68,49)));return s;}
     private JPanel actions(Component... items){JPanel p=new JPanel(new FlowLayout(FlowLayout.LEFT,9,4));p.setOpaque(false);for(Component item:items){if(item instanceof JLabel){item.setForeground(MUTED);}p.add(item);}return p;}
@@ -165,6 +165,32 @@ public class OperationsFrame extends JFrame {
         reload.addActionListener(e->loadTables());free.addActionListener(e->setTableStatus("Trống"));busy.addActionListener(e->setTableStatus("Đang phục vụ"));reserve.addActionListener(e->setTableStatus("Đặt trước"));
         transfer.addActionListener(e->transferTable());merge.addActionListener(e->transferTable());split.addActionListener(e->JOptionPane.showMessageDialog(this,"Chức năng tách bàn sẽ tạo đơn riêng sau khi chọn hóa đơn đang mở."));
         p.add(actions(reload,free,busy,reserve,transfer,merge,split),BorderLayout.SOUTH);p.add(scroll(tableTable),BorderLayout.CENTER);return p;
+    }
+    private JPanel cashierPanel(){
+        JPanel p=page("THU NGÂN • ĐƠN CHỜ THANH TOÁN","Chọn hóa đơn đang chờ để xem chi tiết, nhận tiền mặt hoặc theo dõi chuyển khoản SePay.");
+        pendingPaymentTable=table("Mã đơn","Bàn","Thời gian","Tổng tiền","Trạng thái");
+        JButton reload=button("Làm mới danh sách"),open=button("Mở hóa đơn / Thanh toán");
+        reload.addActionListener(e->loadPendingPayments());
+        open.addActionListener(e->openPendingPayment());
+        p.add(actions(reload,open),BorderLayout.SOUTH);p.add(scroll(pendingPaymentTable),BorderLayout.CENTER);
+        loadPendingPayments(); return p;
+    }
+    private void loadPendingPayments(){
+        if(pendingPaymentTable==null)return;
+        DefaultTableModel m=(DefaultTableModel)pendingPaymentTable.getModel();m.setRowCount(0);
+        try(Connection c=DB.getConnection();Statement q=c.createStatement();ResultSet r=q.executeQuery(
+            "SELECT o.id,o.order_code,COALESCE(t.table_name,'Mang đi'),o.created_at,o.total,o.payment_status "+
+            "FROM orders o LEFT JOIN cafe_tables t ON t.id=o.table_id "+
+            "WHERE o.payment_status IS NULL OR o.payment_status<>'Đã thanh toán' ORDER BY o.created_at ASC")){
+            while(r.next())m.addRow(new Object[]{r.getLong(1),r.getString(2),r.getString(3),r.getTimestamp(4),r.getBigDecimal(5),r.getString(6)});
+        }catch(Exception e){error(e);}
+    }
+    private void openPendingPayment(){
+        int row=pendingPaymentTable==null?-1:pendingPaymentTable.getSelectedRow();
+        if(row<0){JOptionPane.showMessageDialog(this,"Chọn hóa đơn cần xử lý.");return;}
+        long id=((Number)pendingPaymentTable.getValueAt(row,0)).longValue();
+        new InvoiceDialog(this,id).setVisible(true);
+        loadPendingPayments();loadHistory();refreshStats();
     }
     private JPanel staff(){
         JPanel p=page("QUẢN LÝ NHÂN VIÊN","Lưu thông tin nhân viên, chức vụ, số điện thoại và trạng thái làm việc.");
@@ -270,7 +296,7 @@ public class OperationsFrame extends JFrame {
         new InvoiceDialog(this,id).setVisible(true);
     }
     private void deleteSelected(JTable t,String table){int r=t.getSelectedRow();if(r<0)return;int id=((Number)t.getValueAt(r,0)).intValue();if(JOptionPane.showConfirmDialog(this,"Xóa bản ghi đã chọn?","Xác nhận",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION)return;try(Connection c=DB.getConnection();PreparedStatement p=c.prepareStatement("DELETE FROM "+table+" WHERE id=?")){p.setInt(1,id);p.executeUpdate();refreshAll();}catch(Exception e){error(e);}}
-    private void refreshAll(){loadProducts("");loadTables();loadStaff();loadShifts();loadDamages();loadHistory();refreshStats();}
+    private void refreshAll(){loadProducts("");loadTables();loadStaff();loadShifts();loadDamages();loadHistory();loadPendingPayments();refreshStats();}
     private void refreshStats(){try(Connection c=DB.getConnection();Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT (SELECT COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(created_at)=CURDATE()),(SELECT COUNT(*) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(created_at)=CURDATE()),(SELECT COUNT(*) FROM cafe_tables WHERE status='Đang phục vụ')")){if(r.next()){if(revenueValue!=null)revenueValue.setText(money.format(r.getBigDecimal(1))+" đ");if(ordersValue!=null)ordersValue.setText(""+r.getInt(2));if(tablesValue!=null)tablesValue.setText(""+r.getInt(3));}}catch(Exception ignored){}}
     private void error(Exception e){JOptionPane.showMessageDialog(this,e.getMessage(),"Lỗi dữ liệu",JOptionPane.ERROR_MESSAGE);}
 }
