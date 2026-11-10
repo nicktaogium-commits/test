@@ -13,7 +13,7 @@ public class OrderDAO {
     public static long saveAndGetId(DefaultTableModel model) {
         String code = "TT" + System.currentTimeMillis();
         String totalSql = "INSERT INTO orders(order_code,user_id,total,status) " +
-            "VALUES(?,(SELECT id FROM users WHERE username='admin' LIMIT 1),?,'Đã thanh toán')";
+            "VALUES(?,?,?,'Đã thanh toán')";
         try (Connection c = DB.getConnection()) {
             c.setAutoCommit(false);
             try {
@@ -23,7 +23,9 @@ public class OrderDAO {
                 long id;
                 try (PreparedStatement p = c.prepareStatement(totalSql, Statement.RETURN_GENERATED_KEYS)) {
                     p.setString(1, code);
-                    p.setDouble(2, total);
+                    if (Session.getUserId() <= 0) throw new SQLException("Phiên đăng nhập đã hết. Vui lòng đăng nhập lại.");
+                    p.setInt(2, Session.getUserId());
+                    p.setDouble(3, total);
                     p.executeUpdate();
                     try (ResultSet r = p.getGeneratedKeys()) {
                         if (!r.next()) throw new SQLException("Không lấy được mã hóa đơn vừa tạo.");
