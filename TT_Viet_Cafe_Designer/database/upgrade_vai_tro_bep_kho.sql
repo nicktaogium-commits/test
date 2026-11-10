@@ -43,3 +43,11 @@ CREATE TABLE IF NOT EXISTS inventory_movements (
  CONSTRAINT fk_inventory_movement_item FOREIGN KEY(item_id) REFERENCES inventory_items(id),
  CONSTRAINT fk_inventory_movement_user FOREIGN KEY(created_by) REFERENCES users(id)
 ) ENGINE=InnoDB;
+
+-- Tài khoản demo để kiểm tra từng vai trò (mật khẩu demo: 123456).
+-- Khi dùng thực tế, quản lý nên đổi mật khẩu ngay trong tab Tài khoản.
+INSERT IGNORE INTO users(username,password,full_name,role) VALUES
+('cashier','123456','Thu ngân mẫu','cashier'),
+('service','123456','Nhân viên phục vụ mẫu','service'),
+('kitchen','123456','Nhân viên bếp mẫu','kitchen'),
+('warehouse','123456','Nhân viên kho mẫu','warehouse');
