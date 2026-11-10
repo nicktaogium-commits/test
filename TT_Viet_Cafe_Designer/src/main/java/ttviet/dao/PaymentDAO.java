@@ -46,7 +46,7 @@ public final class PaymentDAO {
                     "INSERT INTO payment_transactions(provider,transaction_code,order_code,amount,transfer_content,transaction_time,verification_status) VALUES('CASH',?,?,?,?,NOW(),'Đã xác minh')")) {
                     tx.setString(1,"CASH-"+orderId+"-"+System.currentTimeMillis());
                     tx.setString(2,orderCode);
-                    tx.setBigDecimal(3,received);
+                    tx.setBigDecimal(3,total);
                     tx.setString(4,"Thu ngân xác nhận tiền mặt");
                     tx.executeUpdate();
                 }
