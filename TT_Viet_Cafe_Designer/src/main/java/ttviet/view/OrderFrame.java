@@ -98,7 +98,6 @@ public class OrderFrame extends JFrame {
 
     private void loadTables() {
         cboTable.removeAllItems();
-        cboTable.addItem("Mang đi");
         try (Connection c = DB.getConnection(); Statement s = c.createStatement();
              ResultSet r = s.executeQuery("SELECT id,table_name FROM cafe_tables ORDER BY id")) {
             while (r.next()) cboTable.addItem(r.getInt(1) + " - " + r.getString(2));
@@ -152,7 +151,7 @@ public class OrderFrame extends JFrame {
 
     private Integer selectedTableId() {
         String selected = (String) cboTable.getSelectedItem();
-        if (selected == null || selected.equals("Mang đi")) return null;
+        if (selected == null || selected.endsWith(" - Mang đi")) return null;
         return Integer.valueOf(selected.substring(0, selected.indexOf(" - ")));
     }
 
