@@ -23,8 +23,9 @@ public final class PaymentDAO {
             try {
                 BigDecimal total;
                 int tableId;
+                String orderCode;
                 try (PreparedStatement q=c.prepareStatement(
-                    "SELECT total,table_id,payment_status FROM orders WHERE id=? FOR UPDATE")) {
+                    "SELECT total,table_id,payment_status,order_code FROM orders WHERE id=? FOR UPDATE")) {
                     q.setLong(1,orderId);
                     try(ResultSet r=q.executeQuery()) {
                         if(!r.next()) throw new SQLException("Khong tim thay hoa don.");
@@ -32,6 +33,7 @@ public final class PaymentDAO {
                         total=r.getBigDecimal(1);
                         tableId=r.getInt(2);
                         if(r.wasNull()) tableId=0;
+                        orderCode=r.getString(4);
                     }
                 }
                 if(received.compareTo(total)<0) throw new SQLException("So tien khach dua chua du.");
@@ -39,6 +41,14 @@ public final class PaymentDAO {
                     "UPDATE orders SET payment_status='Đã thanh toán',payment_method='TIEN_MAT',paid_at=NOW(),status='Đã thanh toán' WHERE id=?")) {
                     p.setLong(1,orderId);
                     if(p.executeUpdate()!=1) throw new SQLException("Khong cap nhat duoc hoa don.");
+                }
+                try(PreparedStatement tx=c.prepareStatement(
+                    "INSERT INTO payment_transactions(provider,transaction_code,order_code,amount,transfer_content,transaction_time,verification_status) VALUES('CASH',?,?,?,?,NOW(),'Đã xác minh')")) {
+                    tx.setString(1,"CASH-"+orderId+"-"+System.currentTimeMillis());
+                    tx.setString(2,orderCode);
+                    tx.setBigDecimal(3,received);
+                    tx.setString(4,"Thu ngân xác nhận tiền mặt");
+                    tx.executeUpdate();
                 }
                 releaseTableIfAllPaid(c,tableId);
                 c.commit();
