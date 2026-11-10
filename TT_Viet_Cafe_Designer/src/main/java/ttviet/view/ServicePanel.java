@@ -50,12 +50,12 @@ public class ServicePanel extends JPanel {
         JButton showTables=button("SƠ ĐỒ BÀN"), showMenu=button("THỰC ĐƠN / GỌI MÓN");
         showTables.addActionListener(e->workspaceLayout.show(workspace,"TABLES"));
         showMenu.addActionListener(e->{if(selectedTableId==null)JOptionPane.showMessageDialog(this,"Vui lòng chọn bàn trước.");else workspaceLayout.show(workspace,"ORDER");});
-        navigation.add(showTables); navigation.add(showMenu); header.add(navigation,BorderLayout.SOUTH);
+        navigation.add(showTables); navigation.add(showMenu); header.add(navigation,BorderLayout.CENTER);
         add(header,BorderLayout.NORTH);
 
         tableGrid.setBackground(BG);
         JScrollPane tableScroll=new JScrollPane(tableGrid);
-        tableScroll.setBorder(BorderFactory.createTitledBorder("SƠ ĐỒ BÀN"));
+        tableScroll.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(190,218,234)), "SƠ ĐỒ BÀN"));
         tableScroll.getViewport().setBackground(BG);
         tableScroll.setMinimumSize(new Dimension(240,180));
         tableScroll.setPreferredSize(new Dimension(330,500));
@@ -81,7 +81,10 @@ public class ServicePanel extends JPanel {
         JPanel menuArea=new JPanel(new BorderLayout(6,6)); menuArea.setOpaque(false);
         menuArea.add(menuHeader,BorderLayout.NORTH); menuArea.add(menuScroll,BorderLayout.CENTER);
 
-        cartTable.setRowHeight(25);
+        cartTable.setRowHeight(28);
+        cartTable.setBackground(Color.WHITE); cartTable.setForeground(TEXT);
+        cartTable.getTableHeader().setBackground(new Color(225,241,250));
+        cartTable.getTableHeader().setForeground(new Color(25,91,135));
         cartTable.setFillsViewportHeight(true);
         JScrollPane cartScroll=new JScrollPane(cartTable);
         cartScroll.setPreferredSize(new Dimension(500,150));
