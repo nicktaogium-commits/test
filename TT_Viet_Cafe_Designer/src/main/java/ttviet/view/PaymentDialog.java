@@ -21,6 +21,7 @@ public class PaymentDialog extends JDialog {
     private final JTextField receivedField=new JTextField("0",12);
     private BigDecimal total=BigDecimal.ZERO;
     private String orderCode="";
+    private boolean alreadyPaid=false;
 
     public PaymentDialog(Window owner,long orderId) {
         super(owner,"THANH TOÁN HÓA ĐƠN",ModalityType.APPLICATION_MODAL);
@@ -62,7 +63,7 @@ public class PaymentDialog extends JDialog {
             try(ResultSet r=p.executeQuery()){
                 if(!r.next())throw new SQLException("Không tìm thấy hóa đơn.");
                 orderCode=r.getString(1);total=r.getBigDecimal(2);
-                if("Đã thanh toán".equals(r.getString(3)))status.setText("ĐÃ THANH TOÁN");
+                if("Đã thanh toán".equals(r.getString(3))){alreadyPaid=true;status.setText("ĐÃ THANH TOÁN");}
             }
         }catch(Exception e){JOptionPane.showMessageDialog(this,e.getMessage(),"Lỗi",JOptionPane.ERROR_MESSAGE);}
     }
