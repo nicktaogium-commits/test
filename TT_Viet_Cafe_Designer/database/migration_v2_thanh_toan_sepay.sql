@@ -41,6 +41,15 @@ SET @sql = (SELECT IF(
 ));
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+
+-- Ghi chu rieng cho tung mon (it duong, khong da, khong hanh...).
+SET @sql = (SELECT IF(
+  EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=@db_name AND TABLE_NAME='order_details' AND COLUMN_NAME='note'),
+  'SELECT 1',
+  'ALTER TABLE order_details ADD COLUMN note VARCHAR(500) NULL'
+));
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- Luu tung giao dich nhan duoc tu SePay. transaction_code la duy nhat de chong webhook lap.
 CREATE TABLE IF NOT EXISTS payment_transactions (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
