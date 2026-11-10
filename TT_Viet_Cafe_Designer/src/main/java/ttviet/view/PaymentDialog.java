@@ -86,6 +86,7 @@ public class PaymentDialog extends JDialog {
             public void changedUpdate(javax.swing.event.DocumentEvent e){update();}
         });
         JButton confirm=new JButton("XÁC NHẬN ĐÃ THU TIỀN MẶT");
+        confirm.setEnabled(!alreadyPaid);
         confirm.addActionListener(e->collectCash());
         g.gridy=3;p.add(confirm,g);
         JLabel note=new JLabel("<html><center>Chỉ xác nhận sau khi đã nhận đủ tiền từ khách.</center></html>");
