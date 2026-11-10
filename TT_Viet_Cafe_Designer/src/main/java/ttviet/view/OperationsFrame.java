@@ -58,7 +58,7 @@ public class OperationsFrame extends JFrame {
         JPanel shortcuts=new JPanel(new GridLayout(2,4,12,12));shortcuts.setOpaque(false);
         String[] names={"Gọi món / Thanh toán","Quản lý thực đơn","Sơ đồ bàn","Nhân viên","Phân ca làm","Bồi thường tài sản","Lịch sử hóa đơn","Báo cáo doanh thu"};
         int[] targets={2,1,2,3,4,5,6,7};
-        for(int i=0;i<names.length;i++){final int ix=targets[i];JButton b=button(names[i]);b.addActionListener(e->tabs.setSelectedIndex(ix));shortcuts.add(b);}
+        for(int i=0;i<names.length;i++){final int ix=targets[i];final int item=i;JButton b=button(names[i]);b.addActionListener(e->{if(item==0)new OrderFrame().setVisible(true);else tabs.setSelectedIndex(ix);});shortcuts.add(b);}
         JPanel center=new JPanel(new BorderLayout(12,20));center.setOpaque(false);center.add(metrics,BorderLayout.NORTH);center.add(shortcuts,BorderLayout.CENTER);
         JLabel note=new JLabel("<html><div style='color:#D9C9A9;padding:18px'><h2>VẬN HÀNH T &amp; T VIET</h2><p>• Theo dõi bàn theo trạng thái: xanh - trống, đỏ - đang phục vụ, vàng - đặt trước.</p><p>• Quản lý món, giá, tồn trạng thái còn/hết; tạo đơn và thanh toán.</p><p>• Quản lý nhân viên, ca làm, tài sản hư hỏng và báo cáo doanh thu.</p></div></html>");
         note.setOpaque(true);note.setBackground(PANEL);note.setBorder(new LineBorder(new Color(92,72,43),1,true));
