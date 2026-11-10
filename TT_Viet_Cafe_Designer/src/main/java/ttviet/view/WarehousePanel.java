@@ -24,7 +24,21 @@ public class WarehousePanel extends JPanel {
         actions.add(add);actions.add(in);actions.add(out);actions.add(refresh);
         add(top,BorderLayout.NORTH);add(new JScrollPane(grid),BorderLayout.CENTER);add(actions,BorderLayout.SOUTH);
         add.addActionListener(e->addItem());in.addActionListener(e->move(true));out.addActionListener(e->move(false));refresh.addActionListener(e->load());
-        grid.setRowHeight(28);load();
+        grid.setRowHeight(28);
+        grid.getColumnModel().getColumn(3).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer(){
+            @Override public Component getTableCellRendererComponent(JTable t,Object v,boolean selected,boolean focus,int row,int col){
+                Component x=super.getTableCellRendererComponent(t,v,selected,focus,row,col);
+                if(!selected){
+                    try{
+                        BigDecimal stock=new BigDecimal(String.valueOf(v));
+                        BigDecimal min=new BigDecimal(String.valueOf(t.getValueAt(row,4)));
+                        x.setForeground(stock.compareTo(min)<=0?new Color(205,75,65):new Color(35,130,90));
+                    }catch(Exception ignored){x.setForeground(Color.DARK_GRAY);}
+                }
+                return x;
+            }
+        });
+        load();
     }
     private void load(){
         DefaultTableModel m=(DefaultTableModel)grid.getModel();m.setRowCount(0);
