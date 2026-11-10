@@ -91,7 +91,7 @@ public class OrderDAO {
                 long orderId = -1;
                 try (PreparedStatement q = c.prepareStatement(
                     "SELECT id FROM orders WHERE table_id=? AND status='Đang phục vụ' " +
-                    "AND payment_status='Chờ thanh toán' ORDER BY id DESC LIMIT 1 FOR UPDATE")) {
+                    "AND (payment_status IS NULL OR payment_status<>'Đã thanh toán') ORDER BY id DESC LIMIT 1 FOR UPDATE")) {
                     q.setInt(1, tableId);
                     try (ResultSet rs = q.executeQuery()) { if (rs.next()) orderId = rs.getLong(1); }
                 }
