@@ -31,8 +31,7 @@ public class PaymentDialog extends JDialog {
         boolean allowed=role.equals("cashier")||role.equals("thu ngân")||role.equals("thu ngan")||
             role.equals("manager")||role.equals("admin")||role.equals("quản lý")||role.equals("quan ly");
         if(!allowed){
-            JOptionPane.showMessageDialog(owner,"Chỉ thu ngân hoặc quản lý mới được mở chức năng thanh toán.","Không đủ quyền",JOptionPane.WARNING_MESSAGE);
-            dispose(); return;
+            throw new SecurityException("Chỉ thu ngân hoặc quản lý mới được mở chức năng thanh toán.");
         }
         setSize(560,620);setMinimumSize(new Dimension(500,560));setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10,10));
