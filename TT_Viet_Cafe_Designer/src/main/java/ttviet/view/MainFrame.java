@@ -1,7 +1,9 @@
 package ttviet.view;
 import javax.swing.*;import java.awt.*;
 public class MainFrame extends JFrame {
+ //GEN-BEGIN:variables
  private JLabel lblBrand,lblWelcome;private JButton btnMenu,btnOrder,btnHistory,btnLogout;
+ //GEN-END:variables
  public MainFrame(){initComponents();}
  //GEN-BEGIN:initComponents
  private void initComponents(){
