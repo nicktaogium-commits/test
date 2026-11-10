@@ -35,7 +35,7 @@ public class OperationsFrame extends JFrame {
     }
     private JPanel header(){
         JPanel p=new JPanel(new BorderLayout());p.setBackground(new Color(225,241,250));p.setBorder(new EmptyBorder(15,24,15,24));
-        JLabel brand=new JLabel("<html><span style='color:#CDA05C;font-size:25pt;font-weight:bold'>T &amp; T VIET</span><br><span style='color:#D9C9A9'>CAFE • FAST FOOD &nbsp; | &nbsp; HỆ THỐNG QUẢN LÝ</span></html>");
+        JLabel brand=new JLabel("<html><span style='color:#1E70A6;font-size:25pt;font-weight:bold'>T &amp; T VIET</span><br><span style='color:#47677D'>CAFE • FAST FOOD &nbsp; | &nbsp; HỆ THỐNG QUẢN LÝ</span></html>");
         p.add(brand,BorderLayout.WEST);
         JPanel right=new JPanel(new FlowLayout(FlowLayout.RIGHT,12,5));right.setOpaque(false);
         String roleLabel=roleLabel();
@@ -111,8 +111,8 @@ public class OperationsFrame extends JFrame {
         revenueValue=big("0 đ");ordersValue=big("0");tablesValue=big("0");
         metrics.add(card("DOANH THU HÔM NAY",revenueValue));metrics.add(card("HÓA ĐƠN HÔM NAY",ordersValue));metrics.add(card("BÀN ĐANG CÓ KHÁCH",tablesValue));
         JPanel shortcuts=new JPanel(new GridLayout(2,4,12,12));shortcuts.setOpaque(false);
-        String[] names={"Phục vụ • Sơ đồ bàn & Gọi món","Quản lý thực đơn","Sơ đồ bàn","Nhân viên","Phân ca làm","Bồi thường tài sản","Lịch sử hóa đơn","Báo cáo doanh thu"};
-        String[] targetTitles={"Phục vụ","Thực đơn & giá","Phục vụ","Nhân viên","Phân ca","Bồi thường","Hóa đơn","Báo cáo"};
+        String[] names={"Thu ngân • Đơn chờ thanh toán","Quản lý thực đơn","Sơ đồ bàn","Nhân viên","Phân ca làm","Bồi thường tài sản","Lịch sử hóa đơn","Báo cáo doanh thu"};
+        String[] targetTitles={"Thu ngân","Thực đơn & giá","Phục vụ","Nhân viên","Phân ca","Bồi thường","Hóa đơn","Báo cáo"};
         for(int i=0;i<names.length;i++){
             final int item=i;
             JButton b=button(names[i]);
@@ -121,7 +121,7 @@ public class OperationsFrame extends JFrame {
                     if(tabs.getTitleAt(j).equals(targetTitles[item])){tabs.setSelectedIndex(j);return;}
             });
             b.setName("shortcut_"+i);
-            b.setVisible(isManager() || (isCashier() && (i==0||i==2||i==6||i==7)) || (isService() && (i==0||i==2)));
+            b.setVisible(isManager() || (isCashier() && (i==0||i==6||i==7)) || (isService() && (i==2)));
             shortcuts.add(b);
         }
         JPanel center=new JPanel(new BorderLayout(12,20));center.setOpaque(false);center.add(metrics,BorderLayout.NORTH);center.add(shortcuts,BorderLayout.CENTER);
@@ -168,7 +168,7 @@ public class OperationsFrame extends JFrame {
     }
     private JPanel cashierPanel(){
         JPanel p=page("THU NGÂN • ĐƠN CHỜ THANH TOÁN","Chọn hóa đơn đang chờ để xem chi tiết, nhận tiền mặt hoặc theo dõi chuyển khoản SePay.");
-        pendingPaymentTable=table("Mã đơn","Bàn","Thời gian","Tổng tiền","Trạng thái");
+        pendingPaymentTable=table("ID","Mã đơn","Bàn","Thời gian","Tổng tiền","Thanh toán");
         JButton reload=button("Làm mới danh sách"),open=button("Mở hóa đơn / Thanh toán");
         reload.addActionListener(e->loadPendingPayments());
         open.addActionListener(e->openPendingPayment());
