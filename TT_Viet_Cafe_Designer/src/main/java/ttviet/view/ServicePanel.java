@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.io.File;
 import java.math.BigDecimal;
@@ -159,15 +160,27 @@ public class ServicePanel extends JPanel {
         menuGrid.revalidate();menuGrid.repaint();
     }
     private ImageIcon loadProductIcon(String path,int w,int h){
-        if(path==null||path.isBlank())return null;
-        File f=new File(path);
-        if(!f.isAbsolute()&&!f.exists())f=new File("src/main/resources/"+path);
-        if(!f.exists())f=new File("assets/products/"+path);
-        if(!f.exists())return null;
-        ImageIcon source=new ImageIcon(f.getAbsolutePath());
-        if(source.getIconWidth()<=0)return null;
-        Image image=source.getImage().getScaledInstance(w,h,Image.SCALE_SMOOTH);
-        return new ImageIcon(image);
+        if(path!=null&&!path.isBlank()){
+            File f=new File(path);
+            if(!f.isAbsolute()&&!f.exists())f=new File("src/main/resources/"+path);
+            if(!f.exists())f=new File("assets/products/"+path);
+            if(f.exists()){
+                ImageIcon source=new ImageIcon(f.getAbsolutePath());
+                if(source.getIconWidth()>0)return new ImageIcon(source.getImage().getScaledInstance(w,h,Image.SCALE_SMOOTH));
+            }
+        }
+        // Minh hoa mon an tai cho, khong can tai anh tu Internet.
+        BufferedImage art=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g=art.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new Color(247,239,220));g.fillRoundRect(2,2,w-4,h-4,16,16);
+        g.setColor(new Color(213,195,160));g.fillOval(w/2-38,h/2-24,76,48);
+        g.setColor(Color.WHITE);g.fillOval(w/2-32,h/2-18,64,36);
+        g.setColor(new Color(198,139,65));g.fillOval(w/2-25,h/2-13,50,26);
+        g.setColor(new Color(178,61,43));
+        for(int i=0;i<5;i++)g.fillOval(w/2-17+(i%3)*14,h/2-8+(i/3)*12,7,7);
+        g.dispose();
+        return new ImageIcon(art);
     }
     private String escape(String s){return s.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");}
     private void reloadTables(){
