@@ -257,7 +257,7 @@ public class OperationsFrame extends JFrame {
         try(Connection c=DB.getConnection()){
             StringBuilder x=new StringBuilder("BÁO CÁO TỪ "+a+" ĐẾN "+b+"\n"+"=".repeat(58)+"\n");
             try(PreparedStatement q=c.prepareStatement("SELECT COUNT(*),COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at) BETWEEN ? AND ?")){q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));try(ResultSet r=q.executeQuery()){r.next();x.append("Số hóa đơn: ").append(r.getInt(1)).append("\nDoanh thu: ").append(money.format(r.getBigDecimal(2))).append(" VNĐ\n");}}
-            try(PreparedStatement q=c.prepareStatement("SELECT payment_method,COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at) BETWEEN ? AND ? GROUP BY payment_method")){
+            try(PreparedStatement q=c.prepareStatement("SELECT CASE payment_method WHEN 'TIEN_MAT' THEN 'Tiền mặt' WHEN 'SEPAY' THEN 'Chuyển khoản SePay' ELSE COALESCE(payment_method,'Khác') END,COALESCE(SUM(total),0) FROM orders WHERE payment_status='Đã thanh toán' AND DATE(paid_at) BETWEEN ? AND ? GROUP BY payment_method")){
                 q.setDate(1,Date.valueOf(a));q.setDate(2,Date.valueOf(b));
                 try(ResultSet r=q.executeQuery()){
                     x.append("DOANH THU THEO PHƯƠNG THỨC\n");
