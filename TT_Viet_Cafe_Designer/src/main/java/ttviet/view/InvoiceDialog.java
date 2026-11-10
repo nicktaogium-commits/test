@@ -51,7 +51,7 @@ public class InvoiceDialog extends JDialog {
         try (Connection c = DB.getConnection();
              PreparedStatement q = c.prepareStatement(
                  "SELECT o.order_code,o.created_at,o.total,o.status," +
-                 "o.payment_status,COALESCE(t.table_name,'Mang đi'),COALESCE(u.full_name,u.username,'') " +
+                 "o.payment_status,o.payment_method,o.paid_at,COALESCE(t.table_name,'Mang đi'),COALESCE(u.full_name,u.username,'') " +
                  "FROM orders o LEFT JOIN cafe_tables t ON t.id=o.table_id " +
                  "LEFT JOIN users u ON u.id=o.user_id WHERE o.id=?")) {
             q.setLong(1, orderId);
@@ -64,8 +64,10 @@ public class InvoiceDialog extends JDialog {
                     .append("<b>Ngày giờ:</b> ").append(escape(String.valueOf(r.getTimestamp(2)))).append("<br>")
                     .append("<b>Trạng thái đơn:</b> ").append(escape(r.getString(4))).append("<br>")
                     .append("<b>Thanh toán:</b> ").append(escape(r.getString(5))).append("<br>")
-                    .append("<b>Bàn:</b> ").append(escape(r.getString(6))).append("<br>")
-                    .append("<b>Nhân viên:</b> ").append(escape(r.getString(7))).append("</p>");
+                    .append("<b>Phương thức:</b> ").append(escape(r.getString(6)==null?"Chưa chọn":r.getString(6))).append("<br>")
+                    .append("<b>Thời điểm thanh toán:</b> ").append(escape(String.valueOf(r.getTimestamp(7)))).append("<br>")
+                    .append("<b>Bàn:</b> ").append(escape(r.getString(8))).append("<br>")
+                    .append("<b>Nhân viên:</b> ").append(escape(r.getString(9))).append("</p>");
                 BigDecimal total = r.getBigDecimal(3);
                 html.append("<table width='100%' cellspacing='0' cellpadding='7' style='border-collapse:collapse'>")
                     .append("<tr style='background:#eee'><th align='left'>Món</th><th>SL</th>")
