@@ -156,4 +156,56 @@ public class OrderDAO {
         }
     }
 
+    /** Chuyen don dang mo sang ban trong; giu nguyen chi tiet va trang thai thanh toan. */
+    public static boolean transferOpenTable(int sourceTableId, int targetTableId) {
+        if(sourceTableId<=0 || targetTableId<=0 || sourceTableId==targetTableId)return false;
+        try(Connection c=DB.getConnection()){
+            c.setAutoCommit(false);
+            try{
+                try(PreparedStatement q=c.prepareStatement(
+                    "SELECT id FROM cafe_tables WHERE id IN (?,?) ORDER BY id FOR UPDATE")){
+                    q.setInt(1,sourceTableId);q.setInt(2,targetTableId);
+                    try(ResultSet rs=q.executeQuery()){int count=0;while(rs.next())count++;}
+                }
+                try(PreparedStatement q=c.prepareStatement(
+                    "SELECT id FROM orders WHERE table_id=? AND status='Đang phục vụ' "+
+                    "AND (payment_status IS NULL OR payment_status<>'Đã thanh toán') ORDER BY id DESC LIMIT 1 FOR UPDATE")){
+                    q.setInt(1,sourceTableId);
+                    try(ResultSet rs=q.executeQuery()){
+                        if(!rs.next())throw new SQLException("Bàn hiện tại không có đơn chờ thanh toán để chuyển.");
+                    }
+                }
+                try(PreparedStatement q=c.prepareStatement(
+                    "SELECT COUNT(*) FROM orders WHERE table_id=? AND status='Đang phục vụ' "+
+                    "AND (payment_status IS NULL OR payment_status<>'Đã thanh toán')")){
+                    q.setInt(1,targetTableId);
+                    try(ResultSet rs=q.executeQuery()){
+                        rs.next();
+                        if(rs.getInt(1)>0)throw new SQLException("Bàn đích đang có khách. Vui lòng chọn bàn trống.");
+                    }
+                }
+                try(PreparedStatement q=c.prepareStatement(
+                    "UPDATE orders SET table_id=? WHERE table_id=? AND status='Đang phục vụ' "+
+                    "AND (payment_status IS NULL OR payment_status<>'Đã thanh toán')")){
+                    q.setInt(1,targetTableId);q.setInt(2,sourceTableId);
+                    if(q.executeUpdate()==0)throw new SQLException("Không tìm thấy đơn đang mở.");
+                }
+                try(PreparedStatement q=c.prepareStatement("UPDATE cafe_tables SET status='Trống' WHERE id=?")){
+                    q.setInt(1,sourceTableId);q.executeUpdate();
+                }
+                try(PreparedStatement q=c.prepareStatement("UPDATE cafe_tables SET status='Đang phục vụ' WHERE id=?")){
+                    q.setInt(1,targetTableId);q.executeUpdate();
+                }
+                c.commit();return true;
+            }catch(Exception ex){
+                c.rollback();
+                JOptionPane.showMessageDialog(null,ex.getMessage(),"Không thể chuyển bàn",JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        }catch(Exception ex){
+            JOptionPane.showMessageDialog(null,"Lỗi chuyển bàn: "+ex.getMessage());
+            return false;
+        }
+    }
+
 }
