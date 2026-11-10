@@ -42,6 +42,7 @@ public class PaymentDialog extends JDialog {
         JRadioButton cash=new JRadioButton("TIỀN MẶT",true),bank=new JRadioButton("CHUYỂN KHOẢN QR");
         cash.setOpaque(false);bank.setOpaque(false);cash.setForeground(Color.WHITE);bank.setForeground(Color.WHITE);
         ButtonGroup group=new ButtonGroup();group.add(cash);group.add(bank);
+        cash.setEnabled(!alreadyPaid);bank.setEnabled(!alreadyPaid);
         choose.add(cash);choose.add(bank);
         JPanel cashPanel=cashPanel(),bankPanel=bankPanel();
         methodPanel.add(cashPanel,"CASH");methodPanel.add(bankPanel,"BANK");
