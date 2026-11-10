@@ -42,7 +42,7 @@ public class ServicePanel extends JPanel {
         setBorder(new EmptyBorder(14,16,14,16));
         JLabel heading=new JLabel("PHỤC VỤ • QUẢN LÝ BÀN & GỌI MÓN");
         heading.setForeground(GOLD); heading.setFont(new Font("SansSerif",Font.BOLD,22));
-        JLabel legend=new JLabel("● Trống     ● Đang phục vụ     ● Đặt trước     |     Chọn bàn rồi chọn món");
+        JLabel legend=new JLabel("● Trống     ● Chờ thanh toán     ● Đặt trước     |     Chọn bàn rồi chọn món");
         legend.setForeground(TEXT);
         JPanel header=new JPanel(new BorderLayout(8,8)); header.setOpaque(false);
         header.add(heading,BorderLayout.NORTH); header.add(legend,BorderLayout.SOUTH);
