@@ -93,18 +93,7 @@ public class OperationsFrame extends JFrame {
                 if(south!=null)south.setVisible(false);
             }
         }
-        // Thu ngân được tra cứu/in hóa đơn; không được xóa dữ liệu hóa đơn.
-        // Bếp chỉ xem danh mục món, không được truy cập nghiệp vụ quản trị.
-        for(Component c:((JPanel)getContentPane()).getComponents()){
-            if(c instanceof JPanel){
-                for(Component child:((JPanel)c).getComponents()){
-                    if(child instanceof JButton && ((JButton)child).getName()!=null){
-                        String n=((JButton)child).getName();
-                        if(n.startsWith("shortcut_")){
-                            int ix=Integer.parseInt(n.substring(9));
-                            boolean visible=isCashier()&&(ix==0||ix==2||ix==6||ix==7);
-                            child.setVisible(visible);
-                        }
+    }
                     }
                 }
             }
@@ -138,6 +127,7 @@ public class OperationsFrame extends JFrame {
                     if(tabs.getTitleAt(j).equals(targetTitles[item])){tabs.setSelectedIndex(j);return;}
             });
             b.setName("shortcut_"+i);
+            b.setVisible(isManager() || (isCashier() && (i==0||i==2||i==6||i==7)));
             shortcuts.add(b);
         }
         JPanel center=new JPanel(new BorderLayout(12,20));center.setOpaque(false);center.add(metrics,BorderLayout.NORTH);center.add(shortcuts,BorderLayout.CENTER);
