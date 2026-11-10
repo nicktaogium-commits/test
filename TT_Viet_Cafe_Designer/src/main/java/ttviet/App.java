@@ -1,0 +1,1 @@
+package ttviet; import ttviet.view.LoginFrame; public class App { public static void main(String[] a){java.awt.EventQueue.invokeLater(()->new LoginFrame().setVisible(true));} }
