@@ -41,3 +41,19 @@ De tao QR VietQR dung tai khoan cua quan, can thong tin ngan hang/so tai khoan c
 ## 5. Gioi han ban hien tai
 
 Webhook backend va luu don cho trang thai chua thanh toan da duoc them vao ma nguon. Chua the xac nhan thanh toan thuc te cho den khi co tai khoan SePay, tai khoan ngan hang nhan tien, API key va may chu HTTPS. QR tren giao dien thu ngan, dong bo don dang mo va bo giao dien rieng tung vai tro van la cac hang muc tiep theo.
+
+## Thanh toan tren ung dung Swing
+
+Man hinh xem/in hoa don co nut THANH TOAN voi hai lua chon:
+
+- Tien mat: thu ngan nhap so tien khach dua. He thong chi ghi nhan da thanh toan khi so tien dua du tong hoa don va thu ngan xac nhan; tu tinh tien thua.
+- Chuyen khoan QR: QR VietQR dien san so tien va ma hoa don. SePay webhook la nguon xac nhan duy nhat; khong co nut tu danh dau da chuyen khoan.
+
+Cau hinh tai khoan nhan tien bang bien moi truong tren may chay ung dung:
+- TTV_BANK_CODE: ma ngan hang VietQR (vi du MB, VCB).
+- TTV_BANK_ACCOUNT: so tai khoan nhan tien.
+- TTV_BANK_ACCOUNT_NAME: ten chu tai khoan.
+
+QR dua ma don TTV... vao noi dung chuyen khoan. Cau hinh webhook SePay nhu phan tren van bat buoc de tu dong doi soat. Neu chua cau hinh tai khoan, man hinh se hien thong bao va khong tao QR.
+
+Luu y: can kiem thu voi tai khoan SePay that, webhook HTTPS cong khai va payload thuc te truoc khi dua vao su dung. Khong commit API key vao repository.
