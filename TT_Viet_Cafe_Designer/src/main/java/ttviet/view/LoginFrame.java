@@ -14,7 +14,7 @@ public class LoginFrame extends JFrame {
   lblPass=new JLabel("Mật khẩu");lblPass.setForeground(Color.WHITE);lblPass.setBounds(95,195,130,28);add(lblPass);
   txtPassword=new JPasswordField();txtPassword.setBounds(230,195,230,32);add(txtPassword);
   btnLogin=new JButton("ĐĂNG NHẬP");btnLogin.setBounds(155,260,150,40);add(btnLogin);btnExit=new JButton("THOÁT");btnExit.setBounds(320,260,110,40);add(btnExit);
-  btnLogin.addActionListener(e->{if(AuthDAO.login(txtUsername.getText().trim(),new String(txtPassword.getPassword()))){new MainFrame().setVisible(true);dispose();}else JOptionPane.showMessageDialog(this,"Sai tài khoản hoặc mật khẩu.");});btnExit.addActionListener(e->System.exit(0));getRootPane().setDefaultButton(btnLogin);
+  btnLogin.addActionListener(e->{if(AuthDAO.login(txtUsername.getText().trim(),new String(txtPassword.getPassword()))){new OperationsFrame().setVisible(true);dispose();}else JOptionPane.showMessageDialog(this,"Sai tài khoản hoặc mật khẩu.");});btnExit.addActionListener(e->System.exit(0));getRootPane().setDefaultButton(btnLogin);
  }
  //GEN-END:initComponents
 }
