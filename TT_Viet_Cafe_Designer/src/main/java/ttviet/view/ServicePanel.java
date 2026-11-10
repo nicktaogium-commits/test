@@ -31,6 +31,7 @@ public class ServicePanel extends JPanel {
     private final JLabel totalLabel=new JLabel("Tổng món mới: 0 đ");
     private final NumberFormat money=NumberFormat.getNumberInstance(new Locale("vi","VN"));
     private final Map<Integer,String> tableNames=new LinkedHashMap<>();
+    private final Map<Integer,List<Object[]>> draftCarts=new HashMap<>();
     private final List<Product> allProducts=new ArrayList<>();
     private Integer selectedTableId;
 
@@ -82,12 +83,13 @@ public class ServicePanel extends JPanel {
         cartTitle.setForeground(GOLD); cartTitle.setFont(new Font("SansSerif",Font.BOLD,14));
         cartArea.add(cartTitle,BorderLayout.NORTH); cartArea.add(cartScroll,BorderLayout.CENTER);
         totalLabel.setForeground(GOLD); totalLabel.setFont(new Font("SansSerif",Font.BOLD,17));
-        JButton remove=button("Xóa món"), save=button("GỬI MÓN / IN PHIẾU"), refresh=button("Làm mới");
+        JButton remove=button("Xóa món"), save=button("LƯU / GỬI MÓN"), refresh=button("Làm mới"), transfer=button("CHUYỂN BÀN");
         remove.addActionListener(e->removeCartItem());
         save.addActionListener(e->saveToTable());
         refresh.addActionListener(e->{reloadTables();loadOpenOrderInfo();});
+        transfer.addActionListener(e->transferSelectedTable());
         JPanel actions=new JPanel(new FlowLayout(FlowLayout.RIGHT,6,2)); actions.setOpaque(false);
-        actions.add(remove); actions.add(refresh); actions.add(save);
+        actions.add(remove); actions.add(transfer); actions.add(refresh); actions.add(save);
         JPanel bottom=new JPanel(new BorderLayout()); bottom.setOpaque(false);
         bottom.add(totalLabel,BorderLayout.WEST); bottom.add(actions,BorderLayout.EAST);
         cartArea.add(bottom,BorderLayout.SOUTH);
@@ -212,7 +214,8 @@ public class ServicePanel extends JPanel {
             try(Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT id,table_name,status FROM cafe_tables ORDER BY id")){
                 while(r.next()){
                     int id=r.getInt(1);String name=r.getString(2),status=r.getString(3);tableNames.put(id,name);
-                    JButton b=new JButton("<html><center><b>"+escape(name)+"</b><br>"+escape(status)+"</center></html>");
+                    String displayStatus="Đang phục vụ".equals(status)?"Chờ thanh toán":status;
+                    JButton b=new JButton("<html><center><b>"+escape(name)+"</b><br>"+escape(displayStatus)+"</center></html>");
                     b.setOpaque(true);b.setFocusPainted(false);b.setPreferredSize(new Dimension(92,76));
                     b.setFont(new Font("SansSerif",Font.BOLD,12));b.setForeground(Color.WHITE);
                     if("Trống".equals(status))b.setBackground(new Color(35,125,82));
@@ -230,13 +233,39 @@ public class ServicePanel extends JPanel {
         }
     }
     private void selectTable(int id){
-        if(selectedTableId!=null&&!selectedTableId.equals(id)&&cart.getRowCount()>0){
-            int answer=JOptionPane.showConfirmDialog(this,"Giỏ hiện tại có món chưa gửi. Xóa giỏ để chuyển sang bàn khác?","Đổi bàn",JOptionPane.YES_NO_OPTION);
-            if(answer!=JOptionPane.YES_OPTION)return;
-            cart.setRowCount(0);updateTotal();
-        }
-        selectedTableId=id;selectedLabel.setText("Đang chọn: "+tableNames.get(id));
+        if(selectedTableId!=null && selectedTableId==id)return;
+        if(selectedTableId!=null)saveDraftCart(selectedTableId);
+        selectedTableId=id;
+        cart.setRowCount(0);
+        List<Object[]> draft=draftCarts.get(id);
+        if(draft!=null)for(Object[] row:draft)cart.addRow(row);
+        updateTotal();
+        selectedLabel.setText("Đang chọn: "+tableNames.get(id));
         loadOpenOrderInfo();reloadTables();
+    }
+    private void saveDraftCart(int tableId){
+        List<Object[]> rows=new ArrayList<>();
+        for(int i=0;i<cart.getRowCount();i++)
+            rows.add(new Object[]{cart.getValueAt(i,0),cart.getValueAt(i,1),cart.getValueAt(i,2),cart.getValueAt(i,3)});
+        if(rows.isEmpty())draftCarts.remove(tableId);else draftCarts.put(tableId,rows);
+    }
+    private void transferSelectedTable(){
+        if(selectedTableId==null){JOptionPane.showMessageDialog(this,"Chọn bàn cần chuyển trước.");return;}
+        if(cart.getRowCount()>0){JOptionPane.showMessageDialog(this,"Bạn còn món chưa gửi. Hãy lưu/gửi món trước khi chuyển bàn.");return;}
+        JComboBox<String> target=new JComboBox<>();
+        Map<String,Integer> ids=new LinkedHashMap<>();
+        for(Map.Entry<Integer,String> entry:tableNames.entrySet()){
+            if(!entry.getKey().equals(selectedTableId)){ids.put(entry.getValue(),entry.getKey());target.addItem(entry.getValue());}
+        }
+        if(target.getItemCount()==0)return;
+        if(JOptionPane.showConfirmDialog(this,target,"Chuyển đơn đang chờ sang bàn:",JOptionPane.OK_CANCEL_OPTION)!=JOptionPane.OK_OPTION)return;
+        Integer targetId=ids.get(target.getSelectedItem());
+        if(targetId!=null && OrderDAO.transferOpenTable(selectedTableId,targetId)){
+            selectedTableId=targetId;
+            selectedLabel.setText("Đang chọn: "+tableNames.get(targetId));
+            reloadTables();loadOpenOrderInfo();
+            JOptionPane.showMessageDialog(this,"Đã chuyển đơn sang "+tableNames.get(targetId)+".");
+        }
     }
     private void loadOpenOrderInfo(){
         if(selectedTableId==null)return;
@@ -244,7 +273,7 @@ public class ServicePanel extends JPanel {
             "SELECT order_code,total FROM orders WHERE table_id=? AND status='Đang phục vụ' AND (payment_status IS NULL OR payment_status<>'Đã thanh toán') ORDER BY id DESC LIMIT 1")){
             p.setInt(1,selectedTableId);
             try(ResultSet r=p.executeQuery()){
-                if(r.next())openOrderLabel.setText("Đơn đang mở: "+r.getString(1)+" • Đã gọi: "+money.format(r.getBigDecimal(2))+" đ");
+                if(r.next())openOrderLabel.setText("CHỜ THANH TOÁN • "+r.getString(1)+" • Đã gọi: "+money.format(r.getBigDecimal(2))+" đ");
                 else openOrderLabel.setText("Bàn chưa có đơn đang mở — món mới sẽ tạo đơn đầu tiên.");
             }
         }catch(Exception e){showError(e);}
@@ -279,7 +308,9 @@ public class ServicePanel extends JPanel {
         long orderId=OrderDAO.addItemsToOpenTable(cart,selectedTableId);
         if(orderId>0){
             cart.setRowCount(0);updateTotal();reloadTables();loadOpenOrderInfo();
+            draftCarts.remove(selectedTableId);
             new InvoiceDialog(SwingUtilities.getWindowAncestor(this),orderId).setVisible(true);
+            reloadTables();loadOpenOrderInfo();
         }
     }
     private void showError(Exception e){JOptionPane.showMessageDialog(this,e.getMessage(),"Lỗi dữ liệu",JOptionPane.ERROR_MESSAGE);}
