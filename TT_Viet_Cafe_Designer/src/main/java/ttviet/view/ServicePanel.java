@@ -206,7 +206,7 @@ public class ServicePanel extends JPanel {
             // Dong bo mau ban tu don chua thanh toan, tranh ban van do sau khi da thu tien.
             try(Statement sync=c.createStatement()){
                 sync.executeUpdate("UPDATE cafe_tables t SET status=CASE " +
-                    "WHEN EXISTS(SELECT 1 FROM orders o WHERE o.table_id=t.id AND o.payment_status='Chờ thanh toán' AND o.status='Đang phục vụ') THEN 'Đang phục vụ' " +
+                    "WHEN EXISTS(SELECT 1 FROM orders o WHERE o.table_id=t.id AND (o.payment_status IS NULL OR o.payment_status<>'Đã thanh toán') AND o.status='Đang phục vụ') THEN 'Đang phục vụ' " +
                     "WHEN t.status='Đang phục vụ' THEN 'Trống' ELSE t.status END");
             }
             try(Statement s=c.createStatement();ResultSet r=s.executeQuery("SELECT id,table_name,status FROM cafe_tables ORDER BY id")){
@@ -241,7 +241,7 @@ public class ServicePanel extends JPanel {
     private void loadOpenOrderInfo(){
         if(selectedTableId==null)return;
         try(Connection c=DB.getConnection();PreparedStatement p=c.prepareStatement(
-            "SELECT order_code,total FROM orders WHERE table_id=? AND status='Đang phục vụ' AND payment_status='Chờ thanh toán' ORDER BY id DESC LIMIT 1")){
+            "SELECT order_code,total FROM orders WHERE table_id=? AND status='Đang phục vụ' AND (payment_status IS NULL OR payment_status<>'Đã thanh toán') ORDER BY id DESC LIMIT 1")){
             p.setInt(1,selectedTableId);
             try(ResultSet r=p.executeQuery()){
                 if(r.next())openOrderLabel.setText("Đơn đang mở: "+r.getString(1)+" • Đã gọi: "+money.format(r.getBigDecimal(2))+" đ");
