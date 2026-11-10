@@ -183,9 +183,16 @@ public class OrderDAO {
             c.setAutoCommit(false);
             try{
                 try(PreparedStatement q=c.prepareStatement(
-                    "SELECT id FROM cafe_tables WHERE id IN (?,?) ORDER BY id FOR UPDATE")){
+                    "SELECT id,status FROM cafe_tables WHERE id IN (?,?) ORDER BY id FOR UPDATE")){
                     q.setInt(1,sourceTableId);q.setInt(2,targetTableId);
-                    try(ResultSet rs=q.executeQuery()){int count=0;while(rs.next())count++;
+                    try(ResultSet rs=q.executeQuery()){
+                        int count=0;
+                        while(rs.next()){
+                            count++;
+                            int id=rs.getInt(1);String status=rs.getString(2);
+                            if(id==targetTableId && !"Trống".equals(status))
+                                throw new SQLException("Bàn đích không trống. Vui lòng chọn bàn khác.");
+                        }
                         if(count!=2)throw new SQLException("Không tìm thấy bàn nguồn hoặc bàn đích.");
                     }
                 }
