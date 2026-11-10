@@ -7,6 +7,13 @@ import javax.swing.table.DefaultTableModel;
 
 /** Luu don o trang thai chua thanh toan; viec in phieu khong dong nghia da thu tien. */
 public class OrderDAO {
+    private static void requireServiceOrManager() throws SQLException {
+        String role=Session.getRole()==null ? "" : Session.getRole().trim().toLowerCase(java.util.Locale.ROOT);
+        boolean allowed=role.equals("service") || role.equals("staff") || role.equals("phục vụ") ||
+            role.equals("phuc vu") || role.equals("manager") || role.equals("admin") ||
+            role.equals("quản lý") || role.equals("quan ly");
+        if(!allowed) throw new SQLException("Chỉ nhân viên phục vụ hoặc quản lý mới được gọi món/chuyển bàn.");
+    }
     public static boolean save(DefaultTableModel model) {
         return saveAndGetId(model, null) > 0;
     }
@@ -84,6 +91,10 @@ public class OrderDAO {
     /** Them mon vao don chua thanh toan cua ban; neu chua co don thi tao moi. */
     public static long addItemsToOpenTable(DefaultTableModel model, int tableId) {
         if (model == null || model.getRowCount() == 0 || tableId <= 0) return -1;
+        try { requireServiceOrManager(); } catch(SQLException denied) {
+            JOptionPane.showMessageDialog(null,denied.getMessage(),"Không đủ quyền",JOptionPane.WARNING_MESSAGE);
+            return -1;
+        }
         try (Connection c = DB.getConnection()) {
             c.setAutoCommit(false);
             try {
@@ -127,15 +138,19 @@ public class OrderDAO {
                             if (rs.next()) {
                                 int detailId=rs.getInt(1), newQty=rs.getInt(2)+qty;
                                 try (PreparedStatement u=c.prepareStatement(
-                                    "UPDATE order_details SET quantity=?,unit_price=?,line_total=? WHERE id=?")) {
+                                    "UPDATE order_details SET quantity=?,unit_price=?,line_total=?,note=? WHERE id=?")) {
                                     u.setInt(1,newQty); u.setBigDecimal(2,price);
-                                    u.setBigDecimal(3,price.multiply(BigDecimal.valueOf(newQty))); u.setInt(4,detailId); u.executeUpdate();
+                                    u.setBigDecimal(3,price.multiply(BigDecimal.valueOf(newQty)));
+                                    u.setString(4, model.getColumnCount()>4 && model.getValueAt(i,4)!=null ? model.getValueAt(i,4).toString() : "");
+                                    u.setInt(5,detailId); u.executeUpdate();
                                 }
                             } else {
                                 try (PreparedStatement u=c.prepareStatement(
-                                    "INSERT INTO order_details(order_id,product_id,quantity,unit_price,line_total) VALUES(?,?,?,?,?)")) {
+                                    "INSERT INTO order_details(order_id,product_id,quantity,unit_price,line_total,note) VALUES(?,?,?,?,?,?)")) {
                                     u.setLong(1,orderId); u.setInt(2,productId); u.setInt(3,qty); u.setBigDecimal(4,price);
-                                    u.setBigDecimal(5,price.multiply(BigDecimal.valueOf(qty))); u.executeUpdate();
+                                    u.setBigDecimal(5,price.multiply(BigDecimal.valueOf(qty)));
+                                    u.setString(6, model.getColumnCount()>4 && model.getValueAt(i,4)!=null ? model.getValueAt(i,4).toString() : "");
+                                    u.executeUpdate();
                                 }
                             }
                         }
@@ -159,13 +174,19 @@ public class OrderDAO {
     /** Chuyen don dang mo sang ban trong; giu nguyen chi tiet va trang thai thanh toan. */
     public static boolean transferOpenTable(int sourceTableId, int targetTableId) {
         if(sourceTableId<=0 || targetTableId<=0 || sourceTableId==targetTableId)return false;
+        try { requireServiceOrManager(); } catch(SQLException denied) {
+            JOptionPane.showMessageDialog(null,denied.getMessage(),"Không đủ quyền",JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
         try(Connection c=DB.getConnection()){
             c.setAutoCommit(false);
             try{
                 try(PreparedStatement q=c.prepareStatement(
                     "SELECT id FROM cafe_tables WHERE id IN (?,?) ORDER BY id FOR UPDATE")){
                     q.setInt(1,sourceTableId);q.setInt(2,targetTableId);
-                    try(ResultSet rs=q.executeQuery()){int count=0;while(rs.next())count++;}
+                    try(ResultSet rs=q.executeQuery()){int count=0;while(rs.next())count++;
+                        if(count!=2)throw new SQLException("Không tìm thấy bàn nguồn hoặc bàn đích.");
+                    }
                 }
                 try(PreparedStatement q=c.prepareStatement(
                     "SELECT id FROM orders WHERE table_id=? AND status='Đang phục vụ' "+
