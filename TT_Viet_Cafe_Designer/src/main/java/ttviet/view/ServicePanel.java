@@ -281,11 +281,27 @@ public class ServicePanel extends JPanel {
     private void loadOpenOrderInfo(){
         if(selectedTableId==null)return;
         try(Connection c=DB.getConnection();PreparedStatement p=c.prepareStatement(
-            "SELECT order_code,total FROM orders WHERE table_id=? AND status='Đang phục vụ' AND (payment_status IS NULL OR payment_status<>'Đã thanh toán') ORDER BY id DESC LIMIT 1")){
+            "SELECT id,order_code,total FROM orders WHERE table_id=? AND status='Đang phục vụ' AND (payment_status IS NULL OR payment_status<>'Đã thanh toán') ORDER BY id DESC LIMIT 1")){
             p.setInt(1,selectedTableId);
             try(ResultSet r=p.executeQuery()){
-                if(r.next())openOrderLabel.setText("CHỜ THANH TOÁN • "+r.getString(1)+" • Đã gọi: "+money.format(r.getBigDecimal(2))+" đ");
-                else openOrderLabel.setText("Bàn chưa có đơn đang mở — món mới sẽ tạo đơn đầu tiên.");
+                if(r.next()){
+                    long orderId=r.getLong(1);
+                    StringBuilder detail=new StringBuilder("<html><b style='color:#1e70a6'>CHỜ THANH TOÁN • ")
+                        .append(escape(r.getString(2))).append(" • ").append(money.format(r.getBigDecimal(3))).append(" đ</b><br>");
+                    try(PreparedStatement items=c.prepareStatement(
+                        "SELECT p.name,d.quantity,COALESCE(d.note,'') FROM order_details d JOIN products p ON p.id=d.product_id WHERE d.order_id=? ORDER BY d.id")){
+                        items.setLong(1,orderId);
+                        try(ResultSet x=items.executeQuery()){
+                            while(x.next()){
+                                detail.append("• ").append(escape(x.getString(1))).append(" × ").append(x.getInt(2));
+                                if(x.getString(3)!=null&&!x.getString(3).isBlank())
+                                    detail.append(" <i>(").append(escape(x.getString(3))).append(")</i>");
+                                detail.append("<br>");
+                            }
+                        }
+                    }
+                    detail.append("</html>");openOrderLabel.setText(detail.toString());
+                }else openOrderLabel.setText("Bàn chưa có đơn đang mở — món mới sẽ tạo đơn đầu tiên.");
             }
         }catch(Exception e){showError(e);}
     }
